@@ -119,7 +119,7 @@
 
 <!-- 📌 URL ของ Google Apps Script ของคุณ -->
 <script>
-  const API_URL = "https://script.google.com/macros/s/AKfycbx_ekFxyRf0nU_g_YNoz1wT6WJaaTcN-Fj0KbDKHQd3hd7tvFNd4N629UEhTTpl5_Yl/exec"; 
+  const API_URL = "https://script.google.com/macros/s/AKfycbynii55rX5BIKwSMTXgkYsJOpZDIWp2Xyog7H2tx5ds-8RX-JGgnP6pIV_enL8p4Go6/exec"; 
 </script>
 
 <div id="custom-alert-overlay" class="hidden">
@@ -188,7 +188,6 @@
   <div id="register-page" class="hidden">
     <h2>ลงทะเบียนผู้ใช้งาน</h2>
     <div class="form-row">
-      <!-- ตั้งค่า Default Placeholder คำนำหน้า (สีเทา) -->
       <div class="form-group prefix-col">
         <label>คำนำหน้า</label>
         <select id="reg-prefix" required>
@@ -198,19 +197,12 @@
           <option value="นาง">นาง</option>
         </select>
       </div>
-      <div class="form-group">
-        <label>ชื่อจริง</label>
-        <input type="text" id="reg-firstname" placeholder="กรอกชื่อจริง">
-      </div>
-      <div class="form-group">
-        <label>นามสกุล</label>
-        <input type="text" id="reg-lastname" placeholder="กรอกนามสกุล">
-      </div>
+      <div class="form-group"><label>ชื่อจริง</label><input type="text" id="reg-firstname" placeholder="กรอกชื่อจริง"></div>
+      <div class="form-group"><label>นามสกุล</label><input type="text" id="reg-lastname" placeholder="กรอกนามสกุล"></div>
     </div>
     
     <div class="form-group">
       <label>ตำแหน่ง</label>
-      <!-- ตั้งค่า Default Placeholder ตำแหน่ง (สีเทา) -->
       <select id="reg-position" onchange="toggleIdFields()" required>
         <option value="" disabled selected hidden>-- เลือกตำแหน่ง --</option>
         <option value="นักศึกษา">นักศึกษา</option>
@@ -254,8 +246,25 @@
     <div class="rules-box"><strong>ข้อมูลผู้ยืม:</strong> <span id="display-user-name"></span><br><strong>ตำแหน่ง:</strong> <span id="display-user-pos"></span><br><strong id="label-user-id">รหัสประจำตัว:</strong> <span id="display-user-id"></span><br><strong>เบอร์โทร:</strong> <span id="display-user-phone"></span><br><strong>อีเมลผู้ยืม:</strong> <span id="display-user-email"></span></div>
     <div class="form-group"><label>รายวิชาที่นำไปใช้</label><input type="text" id="equip-subject" placeholder="ระบุชื่อรายวิชา"></div>
     <div class="form-row"><div class="form-group" style="flex:2;"><label>อาจารย์ผู้สอน</label><select id="equip-instructor" onchange="updateInstEmail()"><option value="" disabled selected hidden>-- เลือกอาจารย์ --</option><option value="phromsiri_s@hu.ac.th">อาจารย์พรหมศิริ สว่างแข</option></select></div><div class="form-group" style="flex:3;"><label>อีเมลอาจารย์ (ระบบจะส่งแจ้งเตือน)</label><input type="text" id="equip-instructor-email" readonly placeholder="กรุณาเลือกอาจารย์ผู้สอน"></div></div>
-    <div class="form-row"><div class="form-group"><label>วันที่รับอุปกรณ์</label><input type="date" id="equip-borrow-date" onchange="handleDateChange()"></div><div class="form-group"><label>เวลาที่รับ</label><select id="equip-borrow-time" onchange="clearEqList()"><option value="" disabled selected hidden>-- เลือกเวลา --</option></select></div></div>
-    <div class="form-row"><div class="form-group"><label>วันที่คืนอุปกรณ์</label><input type="date" id="equip-return-date" onchange="handleDateChange()"></div><div class="form-group"><label>เวลาที่คืน</label><select id="equip-return-time" onchange="clearEqList()"><option value="" disabled selected hidden>-- เลือกเวลา --</option></select></div></div>
+    
+    <div class="form-row">
+      <div class="form-group"><label>วันที่รับอุปกรณ์</label><input type="date" id="equip-borrow-date" onchange="handleDateChange()"></div>
+      <div class="form-group">
+        <label>เวลาที่รับ</label>
+        <select id="equip-borrow-time" onchange="clearEqList()">
+          <option value="" disabled selected hidden>-- เลือกเวลา --</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>วันที่คืนอุปกรณ์</label><input type="date" id="equip-return-date" onchange="handleDateChange()"></div>
+      <div class="form-group">
+        <label>เวลาที่คืน</label>
+        <select id="equip-return-time" onchange="clearEqList()">
+          <option value="" disabled selected hidden>-- เลือกเวลา --</option>
+        </select>
+      </div>
+    </div>
 
     <a href="ใส่ลิงก์ไดรฟ์รวมรูปภาพอุปกรณ์ที่นี่" target="_blank" class="link-btn-block">📸 คลิกเพื่อดูรูปภาพของอุปกรณ์ทั้งหมด</a>
     <button type="button" class="btn-search" onclick="checkAvailableInventory()">🔍 ค้นหาอุปกรณ์ที่ว่างในช่วงเวลานี้</button>
@@ -294,7 +303,22 @@
     <h2>แบบฟอร์มขอใช้ห้องสตูดิโอ</h2>
     <h3 id="studio-room-display" style="color: #5b3a7a;"></h3>
     <div class="form-row"><div class="form-group"><label>วันที่ใช้งาน</label><input type="date" id="studio-date"></div></div>
-    <div class="form-row"><div class="form-group"><label>เวลาเริ่มใช้ห้อง</label><select id="studio-start-time"><option value="" disabled selected hidden>-- เลือกเวลา --</option></select></div><div class="form-group"><label>เวลาสิ้นสุดใช้ห้อง (24 ชั่วโมง)</label><select id="studio-end-time"><option value="" disabled selected hidden>-- เลือกเวลา --</option></select></div></div>
+    
+    <div class="form-row">
+      <div class="form-group">
+        <label>เวลาเริ่มใช้ห้อง</label>
+        <select id="studio-start-time">
+          <option value="" disabled selected hidden>-- เลือกเวลา --</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>เวลาสิ้นสุดใช้ห้อง (24 ชั่วโมง)</label>
+        <select id="studio-end-time">
+          <option value="" disabled selected hidden>-- เลือกเวลา --</option>
+        </select>
+      </div>
+    </div>
+    
     <div class="form-group"><label>วัตถุประสงค์ (จำเป็นต้องกรอก)</label><input type="text" id="studio-objective" placeholder="ระบุวัตถุประสงค์การใช้ห้องสตูดิโอ"></div>
     <button type="button" class="link-btn-block" style="margin-bottom: 15px;" onclick="viewStudioEquipment()">🛋️ คลิกเพื่อดูอุปกรณ์เบื้องต้นที่อยู่ในภายในห้องสตูดิโอ</button>
     <button type="button" class="btn-primary" onclick="submitStudio()">ส่งคำร้องขอใช้สตูดิโอ</button>
@@ -667,6 +691,19 @@
     if (rTimeFloat > 16.30) return showCustomAlert("⚠️ ห้ามคืนอุปกรณ์เลยเวลา 16:30 น.");
     if (rTimeFloat < 8.30) return showCustomAlert("⚠️ เวลาคืนอุปกรณ์ต้องอยู่ในช่วงเวลาทำการ (เริ่ม 08:30 น.)");
 
+    // --- เพิ่มการตรวจเช็คเวลาในอดีตสำหรับวันนี้ (ป้องกันกดรับของในเวลาที่ผ่านไปแล้ว) ---
+    const tzOffsetCheck = new Date().getTimezoneOffset() * 60000;
+    const localTodayCheck = new Date(Date.now() - tzOffsetCheck).toISOString().split('T')[0];
+    if (bDate === localTodayCheck) {
+      const now = new Date();
+      const currentMins = now.getHours() * 60 + now.getMinutes();
+      const bMins = parseInt(bTime.split(":")[0]) * 60 + parseInt(bTime.split(":")[1]);
+      if (bMins < currentMins) {
+        return showCustomAlert("⚠️ ไม่สามารถเลือกเวลารับอุปกรณ์ที่ผ่านไปแล้วของวันนี้ได้");
+      }
+    }
+    // --------------------------------------------------------------------------
+
     document.getElementById('equip-items-container').innerHTML = "<p id='equip-placeholder' style='text-align:center; margin:15px 0;'>กำลังคำนวณคิวว่าง...</p>";
     
     let bDateFmt = formatDDMMYYYY(bDate);
@@ -725,9 +762,21 @@
 
     const tzOffsetForSubmit = new Date().getTimezoneOffset() * 60000;
     const localTodayForSubmit = new Date(Date.now() - tzOffsetForSubmit).toISOString().split('T')[0];
+    
     if (currentBorrowType.includes("3 วัน 2 คืน") && bDate === localTodayForSubmit) {
       return showCustomAlert("ไม่สามารถทำรายการได้ (ต้องทำรายการล่วงหน้าอย่างน้อย 1 วัน)");
     }
+
+    // --- เพิ่มการตรวจเช็คเวลาในอดีตสำหรับวันนี้ ---
+    if (bDate === localTodayForSubmit) {
+      const now = new Date();
+      const currentMins = now.getHours() * 60 + now.getMinutes();
+      const bMins = parseInt(bTime.split(":")[0]) * 60 + parseInt(bTime.split(":")[1]);
+      if (bMins < currentMins) {
+        return showCustomAlert("⚠️ ไม่สามารถทำรายการได้ เนื่องจากเวลารับอุปกรณ์ผ่านไปแล้วของวันนี้");
+      }
+    }
+    // ----------------------------------------
 
     const bTimeFloat = parseFloat(bTime.replace(":", "."));
     const rTimeFloat = parseFloat(rTime.replace(":", "."));
@@ -742,7 +791,7 @@
         equipmentListStr += `- ${cb.value} (จำนวน ${qty})\n`; requestedItems.push({ name: cb.value, qty: qty });
       }
     });
-    for(let i=1; i<=otherItemCount; i++) {
+    for(let i=1; i++ <= otherItemCount;) {
       const nameEl = document.getElementById(`other-name-${i}`); const qtyEl = document.getElementById(`other-qty-${i}`);
       if(nameEl && qtyEl && nameEl.value.trim() !== "") equipmentListStr += `- [อื่นๆ] ${nameEl.value.trim()} (จำนวน ${qtyEl.value})\n`;
     }
@@ -775,6 +824,19 @@
     
     if(!uDate || !sTime || !eTime || !obj) return showCustomAlert("⚠️ กรุณากรอกข้อมูลให้ครบถ้วน รวมถึงวัตถุประสงค์การใช้งาน");
     
+    // --- เพิ่มเช็คเวลาในอดีตสำหรับวันนี้ (การจองห้องสตูดิโอ) ---
+    const tzOffsetStudio = new Date().getTimezoneOffset() * 60000;
+    const localTodayStudio = new Date(Date.now() - tzOffsetStudio).toISOString().split('T')[0];
+    if (uDate === localTodayStudio) {
+      const now = new Date();
+      const currentMins = now.getHours() * 60 + now.getMinutes();
+      const sMins = parseInt(sTime.split(":")[0]) * 60 + parseInt(sTime.split(":")[1]);
+      if (sMins < currentMins) {
+        return showCustomAlert("⚠️ ไม่สามารถจองห้องสตูดิโอในเวลาที่ผ่านไปแล้วของวันนี้ได้");
+      }
+    }
+    // ----------------------------------------------------
+
     const sTimeFloat = parseFloat(sTime.replace(':', '.'));
     const eTimeFloat = parseFloat(eTime.replace(':', '.'));
     if (eTimeFloat <= sTimeFloat) return showCustomAlert("⚠️ เวลาสิ้นสุด ต้องมากกว่าเวลาเริ่มต้น");
