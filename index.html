@@ -129,14 +129,14 @@
     .schedule-table th { background: linear-gradient(135deg, rgba(205, 180, 219, 0.9), rgba(255, 190, 221, 0.9)); color: #4a235a; font-weight: bold; }
     .col-day { width: 13%; font-weight: bold; background: rgba(205, 180, 219, 0.3); color: #4a235a; }
     .slot-free { color: #1c6b61; background: rgba(168, 240, 223, 0.2); }
-    .slot-booked { background: var(--bg-color, rgba(255, 175, 204, 0.7)); color: #333; font-weight: bold; font-size: 10px; white-space: nowrap; text-overflow: ellipsis; }
+    .slot-booked { color: #333; font-weight: bold; font-size: 10px; white-space: nowrap; text-overflow: ellipsis; }
   </style>
 </head>
 <body>
 
 <!-- 📌 URL ของ Google Apps Script ของคุณ -->
 <script>
-  const API_URL = "https://script.google.com/macros/s/AKfycbzgO96xzwq2u_7q34QkWBkapdRMrV7iyDbxzFGgNivANA2X1yavHpt1tEzfrOxNiuh4/exec"; 
+  const API_URL = "https://script.google.com/macros/s/AKfycbyVLjb27tXHSNJvGAt7-IsI5iWOsDdslsOXId54rFNX0H6mTlAYxaLxhjb2hsLJ-IE5/exec"; 
 </script>
 
 <div id="custom-alert-overlay" class="hidden">
@@ -245,18 +245,14 @@
       <div class="form-group"><label>วันที่รับอุปกรณ์</label><input type="date" id="equip-borrow-date" onchange="handleDateChange()"></div>
       <div class="form-group">
         <label>เวลาที่รับ (08:30 - 16:30 น.)</label>
-        <select id="equip-borrow-time" onchange="clearEqList()" required>
-          <option value="" disabled selected hidden>-- เลือกเวลา --</option>
-        </select>
+        <select id="equip-borrow-time" onchange="clearEqList()" required><option value="" disabled selected hidden>-- เลือกเวลา --</option></select>
       </div>
     </div>
     <div class="form-row">
       <div class="form-group"><label>วันที่คืนอุปกรณ์</label><input type="date" id="equip-return-date" onchange="handleDateChange()"></div>
       <div class="form-group">
         <label>เวลาที่คืน (08:30 - 16:30 น.)</label>
-        <select id="equip-return-time" onchange="clearEqList()" required>
-          <option value="" disabled selected hidden>-- เลือกเวลา --</option>
-        </select>
+        <select id="equip-return-time" onchange="clearEqList()" required><option value="" disabled selected hidden>-- เลือกเวลา --</option></select>
       </div>
     </div>
 
@@ -302,15 +298,11 @@
     <div class="form-row">
       <div class="form-group">
         <label>เวลาเริ่มใช้ห้อง (08:30 - 21:00 น.)</label>
-        <select id="studio-start-time" required>
-          <option value="" disabled selected hidden>-- เลือกเวลา --</option>
-        </select>
+        <select id="studio-start-time" required><option value="" disabled selected hidden>-- เลือกเวลา --</option></select>
       </div>
       <div class="form-group">
         <label>เวลาสิ้นสุดใช้ห้อง (24 ชั่วโมง)</label>
-        <select id="studio-end-time" required>
-          <option value="" disabled selected hidden>-- เลือกเวลา --</option>
-        </select>
+        <select id="studio-end-time" required><option value="" disabled selected hidden>-- เลือกเวลา --</option></select>
       </div>
     </div>
     
@@ -321,7 +313,7 @@
     <button type="button" class="btn-primary" onclick="submitStudio()">ส่งคำร้องขอใช้สตูดิโอ</button>
     <button type="button" class="btn-danger" onclick="showPage('studio-select-page')">ยกเลิก / ย้อนกลับ</button>
 
-    <!-- ตารางคิวแบบแนวตั้ง (วันอาทิตย์-เสาร์ ลงมาด้านล่าง เวลาเป็นคอลัมน์แนวนอน) -->
+    <!-- ตารางคิวแบบแนวตั้ง (อัปเดตออนไลน์อัตโนมัติ) -->
     <div class="inline-schedule-wrapper">
       <h3 id="schedule-inline-title" style="margin-top: 0; color: #5b3a7a;">📅 ตารางคิวว่างในสัปดาห์นี้</h3>
       <div id="schedule-inline-body">
@@ -418,7 +410,7 @@
     document.getElementById('studio-end-time').innerHTML = studioOptions;
   }
 
-  // --- ตารางคิวแบบแนวตั้ง (วันอาทิตย์-เสาร์ ลงมาด้านล่าง เวลาเป็นแนวนอน) อัปเดตข้อมูลออนไลน์อัตโนมัติ ---
+  // --- ตารางคิวแบบแนวตั้ง (ดึงข้อมูลออนไลน์อัปเดตทันที) ---
   async function loadInlineStudioSchedule() {
     document.getElementById('schedule-inline-title').innerText = `📅 ตารางคิว - ${currentStudioRoom}`;
     document.getElementById('schedule-inline-body').innerHTML = "<p style='text-align:center; color:#666;'>กำลังโหลดตารางคิว กรุณารอสักครู่...</p>";
@@ -440,7 +432,6 @@
        weekDays.push(d);
     }
 
-    // ช่วงเวลาแบ่งเป็นคอลัมน์ (09:00, 11:00, 13:00, 15:00, 17:00, 19:00) เพื่อความพอดีกับหน้าจอ
     const timeSlots = [
       { label: '08:30-10:30', start: 510, end: 630 },
       { label: '10:30-12:30', start: 630, end: 750 },
@@ -451,9 +442,7 @@
     ];
 
     let html = '<table class="schedule-table"><tr><th class="col-day">วัน / เวลา</th>';
-    timeSlots.forEach(slot => {
-       html += `<th>${slot.label}</th>`;
-    });
+    timeSlots.forEach(slot => { html += `<th>${slot.label}</th>`; });
     html += '</tr>';
 
     for(let d of weekDays) {
@@ -468,8 +457,6 @@
              if(b.date === dateStr) {
                 let bStart = parseInt(b.start.split(':')[0])*60 + parseInt(b.start.split(':')[1]);
                 let bEnd = parseInt(b.end.split(':')[0])*60 + parseInt(b.end.split(':')[1]);
-                
-                // เช็คว่ามีการทับซ้อนกับช่วงเวลานี้หรือไม่
                 if (Math.max(slot.start, bStart) < Math.min(slot.end, bEnd)) {
                    isBooked = true;
                    bookedByName = b.name || "จอง";
@@ -479,9 +466,8 @@
           }
 
           if(isBooked) {
-             // สุ่มสีพาสเทลไม่ซ้ำกันทุกครั้ง
              let hue = Math.floor(Math.random() * 360);
-             let pastelColor = `hsl(${hue}, 75%`, 85%)`;
+             let pastelColor = `hsl(${hue}, 75%, 85%)`;
              html += `<td class="slot-booked" style="background-color: ${pastelColor};" title="${bookedByName}">จอง (${bookedByName})</td>`;
           } else {
              html += `<td class="slot-free">ว่าง</td>`;
@@ -492,7 +478,6 @@
     html += '</table>';
     document.getElementById('schedule-inline-body').innerHTML = html;
   }
-  // ----------------------------------------------------
 
   function toggleChat() {
     if (!currentUser.name) return showCustomAlert("⚠️ กรุณาเข้าสู่ระบบก่อนใช้งานแชทสด");
