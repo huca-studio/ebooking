@@ -45,13 +45,15 @@
     .form-group { margin-bottom: 15px; }
     .form-row { display: flex; gap: 10px; flex-wrap: wrap; }
     .form-row > div { flex: 1; min-width: 120px; }
-    .prefix-col { max-width: 120px; }
+    .prefix-col { max-width: 150px; }
     label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; color: #4a4a4a; text-align: left; }
     input[type="text"], input[type="email"], input[type="password"], input[type="tel"], input[type="date"], select { 
       width: 100%; padding: 10px; border: 1px solid rgba(200, 182, 226, 0.8); border-radius: 8px; box-sizing: border-box; font-family: 'Sarabun', sans-serif; background-color: rgba(255, 255, 255, 0.8); transition: 0.3s;
     }
     input:focus, select:focus { outline: none; border-color: #a6c1ee; box-shadow: 0 0 8px rgba(166, 193, 238, 0.5); }
     input[readonly], input:disabled { background-color: rgba(244, 240, 250, 0.6); color: #6c757d; cursor: not-allowed; }
+    select:invalid { color: #888; }
+    select option { color: #333; }
     .pwd-container { position: relative; width: 100%; }
     .pwd-container input { padding-right: 40px; }
     .pwd-toggle { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #888; font-size: 16px; user-select: none; }
@@ -117,7 +119,7 @@
 
 <!-- 📌 URL ของ Google Apps Script ของคุณ -->
 <script>
-  const API_URL = "https://script.google.com/macros/s/AKfycbynii55rX5BIKwSMTXgkYsJOpZDIWp2Xyog7H2tx5ds-8RX-JGgnP6pIV_enL8p4Go6/exec"; 
+  const API_URL = "https://script.google.com/macros/s/AKfycbx_ekFxyRf0nU_g_YNoz1wT6WJaaTcN-Fj0KbDKHQd3hd7tvFNd4N629UEhTTpl5_Yl/exec"; 
 </script>
 
 <div id="custom-alert-overlay" class="hidden">
@@ -185,13 +187,44 @@
   <!-- Register -->
   <div id="register-page" class="hidden">
     <h2>ลงทะเบียนผู้ใช้งาน</h2>
-    <div class="form-row"><div class="form-group prefix-col"><label>คำนำหน้า</label><select id="reg-prefix"><option value="นาย">นาย</option><option value="นางสาว">นางสาว</option><option value="นาง">นาง</option></select></div><div class="form-group"><label>ชื่อจริง</label><input type="text" id="reg-firstname" placeholder="กรอกชื่อจริง"></div><div class="form-group"><label>นามสกุล</label><input type="text" id="reg-lastname" placeholder="กรอกนามสกุล"></div></div>
-    <div class="form-group"><label>ตำแหน่ง</label><select id="reg-position" onchange="toggleIdFields()"><option value="นักศึกษา">นักศึกษา</option><option value="อาจารย์">อาจารย์</option><option value="อาจารย์พิเศษ">อาจารย์พิเศษ</option><option value="บุคลากร">บุคลากร</option></select></div>
+    <div class="form-row">
+      <!-- ตั้งค่า Default Placeholder คำนำหน้า (สีเทา) -->
+      <div class="form-group prefix-col">
+        <label>คำนำหน้า</label>
+        <select id="reg-prefix" required>
+          <option value="" disabled selected hidden>-- เลือกคำนำหน้า --</option>
+          <option value="นาย">นาย</option>
+          <option value="นางสาว">นางสาว</option>
+          <option value="นาง">นาง</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>ชื่อจริง</label>
+        <input type="text" id="reg-firstname" placeholder="กรอกชื่อจริง">
+      </div>
+      <div class="form-group">
+        <label>นามสกุล</label>
+        <input type="text" id="reg-lastname" placeholder="กรอกนามสกุล">
+      </div>
+    </div>
+    
+    <div class="form-group">
+      <label>ตำแหน่ง</label>
+      <!-- ตั้งค่า Default Placeholder ตำแหน่ง (สีเทา) -->
+      <select id="reg-position" onchange="toggleIdFields()" required>
+        <option value="" disabled selected hidden>-- เลือกตำแหน่ง --</option>
+        <option value="นักศึกษา">นักศึกษา</option>
+        <option value="อาจารย์">อาจารย์</option>
+        <option value="อาจารย์พิเศษ">อาจารย์พิเศษ</option>
+        <option value="บุคลากร">บุคลากร</option>
+      </select>
+    </div>
+    
     <div class="form-group" id="group-id"><label>รหัสประจำตัว (รหัสนักศึกษาหรือรหัสบุคลากร)</label><input type="text" id="reg-id" placeholder="กรอกรหัสประจำตัว"></div>
-    <div class="form-group"><label>อีเมล</label><input type="email" id="reg-email"></div>
-    <div class="form-group"><label>เบอร์โทร</label><input type="tel" id="reg-phone"></div>
-    <div class="form-group"><label>รหัสผ่าน</label><div class="pwd-container"><input type="password" id="reg-password"><span class="pwd-toggle" onclick="togglePassword('reg-password', this)">👁️</span></div></div>
-    <div class="form-group"><label>ยืนยันรหัสผ่านอีกครั้ง</label><div class="pwd-container"><input type="password" id="reg-confirm-password"><span class="pwd-toggle" onclick="togglePassword('reg-confirm-password', this)">👁️</span></div></div>
+    <div class="form-group"><label>อีเมล</label><input type="email" id="reg-email" placeholder="กรอกอีเมล"></div>
+    <div class="form-group"><label>เบอร์โทร</label><input type="tel" id="reg-phone" placeholder="กรอกเบอร์โทรศัพท์"></div>
+    <div class="form-group"><label>รหัสผ่าน</label><div class="pwd-container"><input type="password" id="reg-password" placeholder="ตั้งรหัสผ่าน"><span class="pwd-toggle" onclick="togglePassword('reg-password', this)">👁️</span></div></div>
+    <div class="form-group"><label>ยืนยันรหัสผ่านอีกครั้ง</label><div class="pwd-container"><input type="password" id="reg-confirm-password" placeholder="ยืนยันรหัสผ่าน"><span class="pwd-toggle" onclick="togglePassword('reg-confirm-password', this)">👁️</span></div></div>
     <button type="button" class="btn-primary" onclick="register()">ยืนยันการลงทะเบียน</button><button type="button" class="btn-danger" onclick="showPage('login-page')">ยกเลิก</button>
   </div>
 
@@ -220,9 +253,9 @@
     <h3 id="equip-type-display" style="color: #5b3a7a;"></h3>
     <div class="rules-box"><strong>ข้อมูลผู้ยืม:</strong> <span id="display-user-name"></span><br><strong>ตำแหน่ง:</strong> <span id="display-user-pos"></span><br><strong id="label-user-id">รหัสประจำตัว:</strong> <span id="display-user-id"></span><br><strong>เบอร์โทร:</strong> <span id="display-user-phone"></span><br><strong>อีเมลผู้ยืม:</strong> <span id="display-user-email"></span></div>
     <div class="form-group"><label>รายวิชาที่นำไปใช้</label><input type="text" id="equip-subject" placeholder="ระบุชื่อรายวิชา"></div>
-    <div class="form-row"><div class="form-group" style="flex:2;"><label>อาจารย์ผู้สอน</label><select id="equip-instructor" onchange="updateInstEmail()"><option value="">-- เลือกอาจารย์ --</option><option value="phromsiri_s@hu.ac.th">อาจารย์พรหมศิริ สว่างแข</option></select></div><div class="form-group" style="flex:3;"><label>อีเมลอาจารย์ (ระบบจะส่งแจ้งเตือน)</label><input type="text" id="equip-instructor-email" readonly placeholder="กรุณาเลือกอาจารย์ผู้สอน"></div></div>
-    <div class="form-row"><div class="form-group"><label>วันที่รับอุปกรณ์</label><input type="date" id="equip-borrow-date" onchange="handleDateChange()"></div><div class="form-group"><label>เวลาที่รับ</label><select id="equip-borrow-time" onchange="clearEqList()"><option value="">-- เลือกเวลา --</option></select></div></div>
-    <div class="form-row"><div class="form-group"><label>วันที่คืนอุปกรณ์</label><input type="date" id="equip-return-date" onchange="handleDateChange()"></div><div class="form-group"><label>เวลาที่คืน</label><select id="equip-return-time" onchange="clearEqList()"><option value="">-- เลือกเวลา --</option></select></div></div>
+    <div class="form-row"><div class="form-group" style="flex:2;"><label>อาจารย์ผู้สอน</label><select id="equip-instructor" onchange="updateInstEmail()"><option value="" disabled selected hidden>-- เลือกอาจารย์ --</option><option value="phromsiri_s@hu.ac.th">อาจารย์พรหมศิริ สว่างแข</option></select></div><div class="form-group" style="flex:3;"><label>อีเมลอาจารย์ (ระบบจะส่งแจ้งเตือน)</label><input type="text" id="equip-instructor-email" readonly placeholder="กรุณาเลือกอาจารย์ผู้สอน"></div></div>
+    <div class="form-row"><div class="form-group"><label>วันที่รับอุปกรณ์</label><input type="date" id="equip-borrow-date" onchange="handleDateChange()"></div><div class="form-group"><label>เวลาที่รับ</label><select id="equip-borrow-time" onchange="clearEqList()"><option value="" disabled selected hidden>-- เลือกเวลา --</option></select></div></div>
+    <div class="form-row"><div class="form-group"><label>วันที่คืนอุปกรณ์</label><input type="date" id="equip-return-date" onchange="handleDateChange()"></div><div class="form-group"><label>เวลาที่คืน</label><select id="equip-return-time" onchange="clearEqList()"><option value="" disabled selected hidden>-- เลือกเวลา --</option></select></div></div>
 
     <a href="ใส่ลิงก์ไดรฟ์รวมรูปภาพอุปกรณ์ที่นี่" target="_blank" class="link-btn-block">📸 คลิกเพื่อดูรูปภาพของอุปกรณ์ทั้งหมด</a>
     <button type="button" class="btn-search" onclick="checkAvailableInventory()">🔍 ค้นหาอุปกรณ์ที่ว่างในช่วงเวลานี้</button>
@@ -261,7 +294,7 @@
     <h2>แบบฟอร์มขอใช้ห้องสตูดิโอ</h2>
     <h3 id="studio-room-display" style="color: #5b3a7a;"></h3>
     <div class="form-row"><div class="form-group"><label>วันที่ใช้งาน</label><input type="date" id="studio-date"></div></div>
-    <div class="form-row"><div class="form-group"><label>เวลาเริ่มใช้ห้อง</label><select id="studio-start-time"><option value="">-- เลือกเวลา --</option></select></div><div class="form-group"><label>เวลาสิ้นสุดใช้ห้อง (24 ชั่วโมง)</label><select id="studio-end-time"><option value="">-- เลือกเวลา --</option></select></div></div>
+    <div class="form-row"><div class="form-group"><label>เวลาเริ่มใช้ห้อง</label><select id="studio-start-time"><option value="" disabled selected hidden>-- เลือกเวลา --</option></select></div><div class="form-group"><label>เวลาสิ้นสุดใช้ห้อง (24 ชั่วโมง)</label><select id="studio-end-time"><option value="" disabled selected hidden>-- เลือกเวลา --</option></select></div></div>
     <div class="form-group"><label>วัตถุประสงค์ (จำเป็นต้องกรอก)</label><input type="text" id="studio-objective" placeholder="ระบุวัตถุประสงค์การใช้ห้องสตูดิโอ"></div>
     <button type="button" class="link-btn-block" style="margin-bottom: 15px;" onclick="viewStudioEquipment()">🛋️ คลิกเพื่อดูอุปกรณ์เบื้องต้นที่อยู่ในภายในห้องสตูดิโอ</button>
     <button type="button" class="btn-primary" onclick="submitStudio()">ส่งคำร้องขอใช้สตูดิโอ</button>
@@ -395,7 +428,7 @@
   }
 
   function populateTimeDropdowns() {
-    let timeOptions = '<option value="">-- เลือกเวลา --</option>';
+    let timeOptions = '<option value="" disabled selected hidden>-- เลือกเวลา --</option>';
     for (let hour = 8; hour <= 21; hour++) {
       for (let min = 0; min < 60; min += 30) {
         let hStr = hour < 10 ? '0' + hour : hour;
@@ -466,16 +499,19 @@
   }
 
   async function register() {
+    const prefix = document.getElementById('reg-prefix').value;
     const pos = document.getElementById('reg-position').value;
     const fname = document.getElementById('reg-firstname').value.trim();
     const lname = document.getElementById('reg-lastname').value.trim();
     const pass = document.getElementById('reg-password').value;
     const confirmPass = document.getElementById('reg-confirm-password').value;
 
+    if(!prefix) return showCustomAlert("⚠️ กรุณาเลือกคำนำหน้า");
+    if(!pos) return showCustomAlert("⚠️ กรุณาเลือกตำแหน่ง");
     if(pass !== confirmPass) return showCustomAlert("⚠️ รหัสผ่านและการยืนยันรหัสผ่านไม่ตรงกัน กรุณาตรวจสอบอีกครั้ง");
 
     const data = {
-      fullname: document.getElementById('reg-prefix').value + fname + " " + lname, 
+      fullname: prefix + fname + " " + lname, 
       position: pos, id: pos !== 'อาจารย์พิเศษ' ? document.getElementById('reg-id').value : "",
       email: document.getElementById('reg-email').value, phone: document.getElementById('reg-phone').value, password: pass
     };
