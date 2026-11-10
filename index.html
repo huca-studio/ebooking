@@ -31,7 +31,7 @@
     }
     .container { 
       width: 100%;
-      max-width: 750px; 
+      max-width: 800px; 
       background: rgba(255, 255, 255, 0.65); 
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
@@ -114,22 +114,23 @@
     #custom-alert-text { font-size: 16px; color: #333; margin-bottom: 25px; white-space: pre-wrap; font-weight: bold; }
     .btn-alert { background: linear-gradient(135deg, rgba(205, 180, 219, 0.9), rgba(255, 190, 221, 0.9)); color: #4a235a; padding: 10px 35px; width: auto; display: inline-block; box-shadow:none; border:1px solid rgba(255,255,255,0.6); cursor: pointer; border-radius: 6px; font-size: 16px; font-family: 'Sarabun', sans-serif;}
     
-    /* CSS สำหรับตารางคิวสตูดิโอ (ฝังแนวนอน) */
+    /* CSS สำหรับตารางคิวสตูดิโอแบบ Timeline (Gantt Chart) */
     .inline-schedule-wrapper { margin-top: 25px; padding-top: 15px; border-top: 2px dashed rgba(200, 182, 226, 0.8); }
-    .schedule-table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 800px; margin-top: 10px; background: rgba(255,255,255,0.5); }
-    .schedule-table th, .schedule-table td { border: 1px solid rgba(200, 182, 226, 0.6); padding: 6px 4px; text-align: center; }
-    .schedule-table th { background: linear-gradient(135deg, rgba(205, 180, 219, 0.9), rgba(255, 190, 221, 0.9)); color: #4a235a; position: sticky; top: 0; z-index: 2; font-weight: bold; }
-    .col-day { width: 80px; font-weight: bold; background: rgba(205, 180, 219, 0.3); }
-    .slot-free { background: rgba(168, 240, 223, 0.4); color: #1c6b61; }
-    .slot-booked { background: rgba(255, 175, 204, 0.7); color: #9c1543; font-weight: bold; }
-    .table-responsive { overflow-x: auto; border-radius: 8px; border: 1px solid rgba(200, 182, 226, 0.8); }
+    .timeline-wrapper { width: 100%; font-size: 12px; margin-top: 15px; overflow-x: auto; background: rgba(255,255,255,0.5); padding: 10px; border-radius: 8px; border: 1px solid rgba(200, 182, 226, 0.8); }
+    .timeline-inner { min-width: 600px; }
+    .timeline-header { display: flex; margin-left: 80px; position: relative; height: 25px; border-bottom: 2px solid #ccc; margin-bottom: 5px; }
+    .timeline-time-marker { position: absolute; transform: translateX(-50%); color: #4a235a; font-weight: bold; font-size: 12px; bottom: 0; }
+    .timeline-row { display: flex; align-items: center; margin-top: 8px; height: 35px; }
+    .timeline-day { width: 80px; font-weight: bold; flex-shrink: 0; color: #4a235a; text-align: center; border-right: 2px solid #ccc; padding-right: 5px; }
+    .timeline-bar-area { flex-grow: 1; height: 100%; background: rgba(255,255,255,0.4); border-radius: 4px; position: relative; border: 1px solid #ddd; overflow: hidden; }
+    .booking-bar { position: absolute; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #333; font-weight: bold; border-radius: 4px; border: 1px solid rgba(0,0,0,0.2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 4px; box-sizing: border-box; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
   </style>
 </head>
 <body>
 
 <!-- 📌 URL ของ Google Apps Script ของคุณ -->
 <script>
-  const API_URL = "https://script.google.com/macros/s/AKfycbzFQU5YM9rRKhxdcSN7cU82ednQTmEWc4L_3Q8v8Xr27iAKyn4Do_ZmylPoGvjK07WN/exec"; 
+  const API_URL = "https://script.google.com/macros/s/AKfycbxLBe16gpum5r0Kqd_oecJkFHujAOF1N2TJpI293Nq5sN26U4AKJYwdelCu4rakY9Q/exec"; 
 </script>
 
 <div id="custom-alert-overlay" class="hidden">
@@ -238,14 +239,14 @@
       <div class="form-group"><label>วันที่รับอุปกรณ์</label><input type="date" id="equip-borrow-date" onchange="handleDateChange()"></div>
       <div class="form-group">
         <label>เวลาที่รับ (08:30 - 16:30 น.)</label>
-        <input type="time" id="equip-borrow-time" min="08:30" max="16:30" onchange="clearEqList()" required>
+        <input type="time" id="equip-borrow-time" lang="en-GB" onchange="clearEqList()" required>
       </div>
     </div>
     <div class="form-row">
       <div class="form-group"><label>วันที่คืนอุปกรณ์</label><input type="date" id="equip-return-date" onchange="handleDateChange()"></div>
       <div class="form-group">
         <label>เวลาที่คืน (08:30 - 16:30 น.)</label>
-        <input type="time" id="equip-return-time" min="08:30" max="16:30" onchange="clearEqList()" required>
+        <input type="time" id="equip-return-time" lang="en-GB" onchange="clearEqList()" required>
       </div>
     </div>
 
@@ -291,23 +292,22 @@
     <div class="form-row">
       <div class="form-group">
         <label>เวลาเริ่มใช้ห้อง (08:30 - 21:00 น.)</label>
-        <input type="time" id="studio-start-time" min="08:30" max="21:00" required>
+        <input type="time" id="studio-start-time" lang="en-GB" required>
       </div>
       <div class="form-group">
         <label>เวลาสิ้นสุดใช้ห้อง (24 ชั่วโมง)</label>
-        <input type="time" id="studio-end-time" min="08:30" max="21:00" required>
+        <input type="time" id="studio-end-time" lang="en-GB" required>
       </div>
     </div>
     
     <div class="form-group"><label>วัตถุประสงค์ (จำเป็นต้องกรอก)</label><input type="text" id="studio-objective" placeholder="ระบุวัตถุประสงค์การใช้ห้องสตูดิโอ"></div>
     
-    <!-- ปุ่มฝั่งสตูดิโอต่างๆ -->
     <button type="button" class="link-btn-block" style="margin-bottom: 25px;" onclick="viewStudioEquipment()">🛋️ คลิกเพื่อดูอุปกรณ์เบื้องต้นที่อยู่ในภายในห้องสตูดิโอ</button>
     
     <button type="button" class="btn-primary" onclick="submitStudio()">ส่งคำร้องขอใช้สตูดิโอ</button>
     <button type="button" class="btn-danger" onclick="showPage('studio-select-page')">ยกเลิก / ย้อนกลับ</button>
 
-    <!-- ตารางคิวแบบฝัง (Inline) จะแสดงตรงนี้อัตโนมัติ -->
+    <!-- ตารางคิวแบบฝังแถบสี (Timeline) -->
     <div class="inline-schedule-wrapper">
       <h3 id="schedule-inline-title" style="margin-top: 0; color: #5b3a7a;">📅 ตารางคิวว่างในสัปดาห์นี้</h3>
       <div id="schedule-inline-body">
@@ -335,9 +335,6 @@
   let monthChartInstance = null;
   let yearChartInstance = null;
 
-  // ----------------------------------------------------
-  // ระบบเรียก API จาก GitHub ไปหา Google Apps Script
-  // ----------------------------------------------------
   async function callBackendAPI(action, payload = {}) {
     if(!API_URL || API_URL === "ใส่_URL_WEB_APP_ที่นี่") {
       alert("กรุณาใส่ URL ของ Web App ก่อนใช้งาน");
@@ -377,7 +374,7 @@
     return `${day}/${month}/${year}`;
   }
 
-  // --- ฟังก์ชันโหลดตารางคิวแบบฝังแนวนอน (Inline) ---
+  // --- ฟังก์ชันสร้างตารางคิวแบบแถบสี (Gantt Chart Timeline) ---
   async function loadInlineStudioSchedule() {
     document.getElementById('schedule-inline-title').innerText = `📅 ตารางคิว - ${currentStudioRoom}`;
     document.getElementById('schedule-inline-body').innerHTML = "<p style='text-align:center; color:#666;'>กำลังโหลดตารางคิว กรุณารอสักครู่...</p>";
@@ -389,7 +386,6 @@
     }
 
     let curr = new Date();
-    // หาตำแหน่งวันอาทิตย์ของสัปดาห์นี้
     let first = curr.getDate() - curr.getDay(); 
     let sunday = new Date(curr.setDate(first));
 
@@ -400,59 +396,56 @@
        weekDays.push(d);
     }
 
-    // สร้างตาราง เวลาเป็นคอลัมน์แนวนอน
-    let html = '<div class="table-responsive"><table class="schedule-table"><tr><th class="col-day">วันที่</th>';
+    // กำหนดเวลาเปิด-ปิดของ Timeline (08:30 - 21:00) คิดเป็นนาที
+    const START_MINS = 510; 
+    const END_MINS = 1260; 
+    const TOTAL_MINS = END_MINS - START_MINS;
+
+    let html = '<div class="timeline-wrapper"><div class="timeline-inner">';
     
-    // แบ่งช่วงเวลาแสดงผลเพื่อให้ดูง่าย (คำนวณซ่อนหลังบ้านด้วยระบบนาที)
-    const times = [
-      { label: '08:30', s: 510, e: 570 },
-      { label: '09:30', s: 570, e: 630 },
-      { label: '10:30', s: 630, e: 690 },
-      { label: '11:30', s: 690, e: 750 },
-      { label: '12:30', s: 750, e: 810 },
-      { label: '13:30', s: 810, e: 870 },
-      { label: '14:30', s: 870, e: 930 },
-      { label: '15:30', s: 930, e: 990 },
-      { label: '16:30', s: 990, e: 1050 },
-      { label: '17:30', s: 1050, e: 1110 },
-      { label: '18:30', s: 1110, e: 1170 },
-      { label: '19:30', s: 1170, e: 1230 },
-      { label: '20:30', s: 1230, e: 1260 }
-    ];
+    // สร้างแกนเวลาด้านบน (Header)
+    html += '<div class="timeline-header">';
+    const markers = [9, 11, 13, 15, 17, 19, 21]; // มาร์คเวลาทุกๆ 2 ชั่วโมง
+    markers.forEach(h => {
+       let m = h * 60;
+       let leftPercent = ((m - START_MINS) / TOTAL_MINS) * 100;
+       if (leftPercent >= 0 && leftPercent <= 100) {
+          html += `<div class="timeline-time-marker" style="left: ${leftPercent}%;">${h.toString().padStart(2, '0')}:00</div>`;
+       }
+    });
+    html += '</div>';
 
-    for(let t of times) {
-       html += `<th>${t.label}</th>`;
-    }
-    html += '</tr>';
-
+    // สร้างแถบจองของแต่ละวัน
     for(let d of weekDays) {
-       html += `<tr><td class="col-day">${d.toLocaleDateString('th-TH', {weekday:'short'})}<br>${d.getDate()}/${d.getMonth()+1}</td>`;
+       let dateStr = formatDDMMYYYY_fromObj(d);
+       html += `<div class="timeline-row">`;
+       html += `<div class="timeline-day">${d.toLocaleDateString('th-TH', {weekday:'short'})}<br>${d.getDate()}/${d.getMonth()+1}</div>`;
+       html += `<div class="timeline-bar-area">`;
        
-       for(let t of times) {
-          let dateStr = formatDDMMYYYY_fromObj(d);
-          let isBooked = false;
-          
-          for(let b of res.data) {
-             if(b.date === dateStr) {
-                // แปลงเวลาที่ผู้ใช้พิมพ์อิสระ (เช่น 09:15) ให้เป็นนาทีรวมเพื่อเทียบการทับซ้อน
-                let bStartMins = parseInt(b.start.split(':')[0])*60 + parseInt(b.start.split(':')[1]);
-                let bEndMins = parseInt(b.end.split(':')[0])*60 + parseInt(b.end.split(':')[1]);
+       for(let b of res.data) {
+          if(b.date === dateStr) {
+             let bStartMins = parseInt(b.start.split(':')[0])*60 + parseInt(b.start.split(':')[1]);
+             let bEndMins = parseInt(b.end.split(':')[0])*60 + parseInt(b.end.split(':')[1]);
+             
+             // วาดกราฟเฉพาะส่วนที่อยู่ในช่วงเวลาทำการ
+             let drawStart = Math.max(START_MINS, bStartMins);
+             let drawEnd = Math.min(END_MINS, bEndMins);
+             
+             if (drawStart < drawEnd) {
+                let left = ((drawStart - START_MINS) / TOTAL_MINS) * 100;
+                let width = ((drawEnd - drawStart) / TOTAL_MINS) * 100;
                 
-                // เช็คว่ามีเวลาทับซ้อนกันในคอลัมน์ช่องนี้หรือไม่
-                if (Math.max(t.s, bStartMins) < Math.min(t.e, bEndMins)) {
-                   isBooked = true; break;
-                }
+                // สุ่มสีพาสเทล
+                let hue = Math.floor(Math.random() * 360);
+                let bgColor = `hsl(${hue}, 70%, 85%)`;
+                
+                html += `<div class="booking-bar" style="left: ${left}%; width: ${width}%; background-color: ${bgColor};" title="จอง ${b.start}-${b.end} น.">จอง ${b.start}-${b.end}</div>`;
              }
           }
-          if(isBooked) {
-             html += `<td class="slot-booked">จอง</td>`;
-          } else {
-             html += `<td class="slot-free">ว่าง</td>`;
-          }
        }
-       html += `</tr>`;
+       html += `</div></div>`;
     }
-    html += '</table></div>';
+    html += '</div></div>';
     document.getElementById('schedule-inline-body').innerHTML = html;
   }
   // ----------------------------------------------------
@@ -739,7 +732,6 @@
       return showCustomAlert("ไม่สามารถยืมอุปกรณ์ข้ามวันได้ เป็นการยืมแบบวันต่อวัน");
     }
 
-    // แปลงเวลาให้เป็นจำนวนนาทีเพื่อเช็คความถูกต้องแบบอิสระ
     const bMins = parseInt(bTime.split(":")[0]) * 60 + parseInt(bTime.split(":")[1]);
     const rMins = parseInt(rTime.split(":")[0]) * 60 + parseInt(rTime.split(":")[1]);
     
@@ -851,6 +843,8 @@
     let rDateFmt = formatDDMMYYYY(rDate);
 
     showCustomAlert("กำลังส่งเรื่อง กรุณารอสักครู่...", null, true);
+    
+    // สำคัญ: แนบข้อมูล userEmail: currentUser.email เพื่อให้หลังบ้านนำไปใช้อ้างอิงการส่งเมล
     let res = await callBackendAPI("submitEquipmentRequest", { data: { userName: currentUser.name, userPhone: currentUser.phone, userEmail: currentUser.email, position: currentUser.position, userId: currentUser.id, borrowType: currentBorrowType, subject: document.getElementById('equip-subject').value, instructorName: instSelect.options[instSelect.selectedIndex].text, instructorEmail: document.getElementById('equip-instructor-email').value, borrowDate: bDateFmt, borrowTime: bTime, returnDate: rDateFmt, returnTime: rTime, equipmentList: equipmentListStr, requestedItems: requestedItems } });
     showCustomAlert(res.message, () => { if(res.success) showPage('main-menu-page'); });
   }
@@ -871,7 +865,6 @@
     document.getElementById('studio-objective').value = "";
     showPage('studio-form-page'); 
 
-    // โหลดตารางคิวแบบฝัง
     loadInlineStudioSchedule();
   }
   
@@ -892,7 +885,8 @@
     let useDateFmt = formatDDMMYYYY(uDate);
     showCustomAlert("กำลังตรวจสอบคิวว่าง กรุณารอสักครู่...", null, true);
     
-    let res = await callBackendAPI("submitStudioRequest", { data: { userName: currentUser.name, position: currentUser.position, roomType: currentStudioRoom, useDate: useDateFmt, startTime: sTime, endTime: eTime, objective: obj } });
+    // สำคัญ: แนบข้อมูล userEmail: currentUser.email เข้าไปด้วย เพื่อให้หลังบ้านสั่งส่งเมลได้
+    let res = await callBackendAPI("submitStudioRequest", { data: { userName: currentUser.name, userEmail: currentUser.email, position: currentUser.position, roomType: currentStudioRoom, useDate: useDateFmt, startTime: sTime, endTime: eTime, objective: obj } });
     showCustomAlert(res.message, () => { if (res.success) showPage('main-menu-page'); });
   }
 </script>
