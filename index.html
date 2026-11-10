@@ -122,20 +122,23 @@
     #custom-alert-text { font-size: 16px; color: #333; margin-bottom: 25px; white-space: pre-wrap; font-weight: bold; }
     .btn-alert { background: linear-gradient(135deg, rgba(205, 180, 219, 0.9), rgba(255, 190, 221, 0.9)); color: #4a235a; padding: 10px 35px; width: auto; display: inline-block; box-shadow:none; border:1px solid rgba(255,255,255,0.6); cursor: pointer; border-radius: 6px; font-size: 16px; font-family: 'Sarabun', sans-serif;}
     
+    /* CSS สำหรับตารางคิวสตูดิโอแบบแผนภูมิแท่งแนวนอน (Timeline Gantt Chart) */
     .inline-schedule-wrapper { margin-top: 25px; padding-top: 15px; border-top: 2px dashed rgba(200, 182, 226, 0.8); }
-    .schedule-table { width: 100%; border-collapse: collapse; font-size: 11px; margin-top: 10px; background: rgba(255,255,255,0.6); table-layout: fixed; }
-    .schedule-table th, .schedule-table td { border: 1px solid rgba(200, 182, 226, 0.6); padding: 6px 2px; text-align: center; overflow: hidden; }
-    .schedule-table th { background: linear-gradient(135deg, rgba(205, 180, 219, 0.9), rgba(255, 190, 221, 0.9)); color: #4a235a; font-weight: bold; }
-    .col-day { width: 13%; font-weight: bold; background: rgba(205, 180, 219, 0.3); color: #4a235a; }
-    .slot-free { color: #1c6b61; background: rgba(168, 240, 223, 0.2); }
-    .slot-booked { color: #333; font-weight: bold; font-size: 10px; white-space: nowrap; text-overflow: ellipsis; }
+    .timeline-wrapper { width: 100%; font-size: 12px; margin-top: 15px; overflow-x: auto; overflow-y: hidden; background: rgba(255,255,255,0.6); padding: 10px 10px 15px 10px; border-radius: 8px; border: 1px solid rgba(200, 182, 226, 0.8); }
+    .timeline-inner { min-width: 700px; height: auto; }
+    .timeline-header { display: flex; margin-left: 90px; position: relative; height: 30px; border-bottom: 2px solid #ccc; margin-bottom: 8px; }
+    .timeline-time-marker { position: absolute; transform: translateX(-50%); color: #4a235a; font-weight: bold; font-size: 11px; bottom: 4px; }
+    .timeline-row { display: flex; align-items: center; margin-top: 10px; height: 38px; }
+    .timeline-day { width: 90px; font-weight: bold; flex-shrink: 0; color: #4a235a; text-align: center; border-right: 2px solid #ccc; padding-right: 8px; line-height: 1.3; font-size: 11px; }
+    .timeline-bar-area { flex-grow: 1; height: 100%; background: rgba(255,255,255,0.4); border-radius: 4px; position: relative; border: 1px solid #ddd; }
+    .booking-bar { position: absolute; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #333; font-weight: bold; border-radius: 4px; border: 1px solid rgba(0,0,0,0.2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 4px; box-sizing: border-box; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
   </style>
 </head>
 <body>
 
 <!-- 📌 URL ของ Google Apps Script ของคุณ -->
 <script>
-  const API_URL = "https://script.google.com/macros/s/AKfycby7_xYzQvG9GY9wH3A3rTruiqcB1lv7No2oVhi_A-q2l_qARTLqdW5S7V9XwXVhexu6/exec"; 
+  const API_URL = "https://script.google.com/macros/s/AKfycbz-06rgXEvw4xcbAa3pd-eVoUQX_li2i7Whl4JOVrZ4p3dTKpWgaOe9jN5_895AJN44/exec"; 
 </script>
 
 <div id="custom-alert-overlay" class="hidden">
@@ -312,10 +315,10 @@
     <button type="button" class="btn-primary" onclick="submitStudio()">ส่งคำร้องขอใช้สตูดิโอ</button>
     <button type="button" class="btn-danger" onclick="showPage('studio-select-page')">ยกเลิก / ย้อนกลับ</button>
 
-    <!-- ตารางคิวแบบแนวตั้ง (รองรับการเลื่อนสัปดาห์อัตโนมัติ) -->
+    <!-- ตารางคิวแบบแผนภูมิแท่งแนวนอน (Timeline Gantt Chart) พร้อมปุ่มเลื่อนสัปดาห์อัตโนมัติ -->
     <div class="inline-schedule-wrapper">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-        <h3 id="schedule-inline-title" style="margin: 0; color: #5b3a7a;">📅 ตารางคิว</h3>
+        <h3 id="schedule-inline-title" style="margin: 0; color: #5b3a7a;">📅 แผนภูมิตารางคิว</h3>
         <div>
           <button type="button" class="btn-secondary" style="padding: 4px 10px; font-size: 12px; width: auto; margin-top:0;" onclick="changeScheduleWeek(-1)">◀ สัปดาห์ก่อน</button>
           <button type="button" class="btn-secondary" style="padding: 4px 10px; font-size: 12px; width: auto; margin-top:0;" onclick="changeScheduleWeek(1)">สัปดาห์ถัดไป ▶</button>
@@ -416,8 +419,9 @@
     document.getElementById('studio-end-time').innerHTML = studioOptions;
   }
 
+  // --- ตารางคิวสตูดิโอแบบแผนภูมิแท่งแนวนอน (Timeline Gantt Chart) พร้อมรองรับเลื่อนสัปดาห์อัตโนมัติ ---
   async function loadInlineStudioSchedule(targetSunday = null) {
-    document.getElementById('schedule-inline-title').innerText = `📅 ตารางคิว - ${currentStudioRoom}`;
+    document.getElementById('schedule-inline-title').innerText = `📅 แผนภูมิตารางคิว - ${currentStudioRoom}`;
     document.getElementById('schedule-inline-body').innerHTML = "<p style='text-align:center; color:#666;'>กำลังโหลดตารางคิว กรุณารอสักครู่...</p>";
 
     let res = await callBackendAPI("getStudioSchedule", { roomType: currentStudioRoom });
@@ -428,7 +432,7 @@
 
     if (!currentScheduleSunday) {
       let curr = new Date();
-      let first = curr.getDate() - curr.getDay(); 
+      let first = curr.getDate() - curr.getDay(); // วันอาทิตย์ของสัปดาห์นี้
       currentScheduleSunday = new Date(curr.setDate(first));
       currentScheduleSunday.setHours(0,0,0,0);
     } else if (targetSunday) {
@@ -442,54 +446,58 @@
        weekDays.push(d);
     }
 
-    const timeSlots = [
-      { label: '08:30-10:30', start: 510, end: 630 },
-      { label: '10:30-12:30', start: 630, end: 750 },
-      { label: '12:30-14:30', start: 750, end: 870 },
-      { label: '14:30-16:30', start: 870, end: 990 },
-      { label: '16:30-18:30', start: 990, end: 1110 },
-      { label: '18:30-21:00', start: 1110, end: 1260 }
-    ];
+    const START_MINS = 510; // 08:30
+    const END_MINS = 1260; // 21:00
+    const TOTAL_MINS = END_MINS - START_MINS;
 
     let startRangeStr = `${weekDays[0].getDate()} ${weekDays[0].toLocaleDateString('th-TH', {month:'short'})}`;
     let endRangeStr = `${weekDays[6].getDate()} ${weekDays[6].toLocaleDateString('th-TH', {month:'short'})} ${weekDays[6].getFullYear()+543}`;
-    document.getElementById('schedule-inline-title').innerText = `📅 ตารางคิว (${startRangeStr} - ${endRangeStr})`;
+    document.getElementById('schedule-inline-title').innerText = `📅 แผนภูมิตารางคิว (${startRangeStr} - ${endRangeStr})`;
 
-    let html = '<table class="schedule-table"><tr><th class="col-day">วัน / เวลา</th>';
-    timeSlots.forEach(slot => { html += `<th>${slot.label}</th>`; });
-    html += '</tr>';
+    let html = '<div class="timeline-wrapper"><div class="timeline-inner">';
+    
+    // แกนเวลาด้านบน
+    html += '<div class="timeline-header">';
+    const markers = [9, 11, 13, 15, 17, 19, 21]; 
+    markers.forEach(h => {
+       let m = h * 60;
+       let leftPercent = ((m - START_MINS) / TOTAL_MINS) * 100;
+       if (leftPercent >= 0 && leftPercent <= 100) {
+          html += `<div class="timeline-time-marker" style="left: ${leftPercent}%;">${h.toString().padStart(2, '0')}:00</div>`;
+       }
+    });
+    html += '</div>';
 
+    // วาดแถวของแต่ละวัน
     for(let d of weekDays) {
        let dateStr = formatDDMMYYYY_fromObj(d);
-       html += `<tr><td class="col-day">${d.toLocaleDateString('th-TH', {weekday:'short'})}<br>${d.getDate()}/${d.getMonth()+1}</td>`;
+       html += `<div class="timeline-row">`;
+       html += `<div class="timeline-day">${d.toLocaleDateString('th-TH', {weekday:'short'})}<br>${d.getDate()}/${d.getMonth()+1}</div>`;
+       html += `<div class="timeline-bar-area">`;
        
-       for(let slot of timeSlots) {
-          let isBooked = false;
-          let bookedByName = "";
-
-          for(let b of res.data) {
-             if(b.date === dateStr) {
-                let bStart = parseInt(b.start.split(':')[0])*60 + parseInt(b.start.split(':')[1]);
-                let bEnd = parseInt(b.end.split(':')[0])*60 + parseInt(b.end.split(':')[1]);
-                if (Math.max(slot.start, bStart) < Math.min(slot.end, bEnd)) {
-                   isBooked = true;
-                   bookedByName = b.name || "จอง";
-                   break;
-                }
+       for(let b of res.data) {
+          if(b.date === dateStr) {
+             let bStartMins = parseInt(b.start.split(':')[0])*60 + parseInt(b.start.split(':')[1]);
+             let bEndMins = parseInt(b.end.split(':')[0])*60 + parseInt(b.end.split(':')[1]);
+             
+             let drawStart = Math.max(START_MINS, bStartMins);
+             let drawEnd = Math.min(END_MINS, bEndMins);
+             
+             if (drawStart < drawEnd) {
+                let left = ((drawStart - START_MINS) / TOTAL_MINS) * 100;
+                let width = ((drawEnd - drawStart) / TOTAL_MINS) * 100;
+                
+                // สุ่มสีพาสเทลไม่ซ้ำกัน
+                let hue = Math.floor(Math.random() * 360);
+                let bgColor = `hsl(${hue}, 70%, 85%)`;
+                
+                html += `<div class="booking-bar" style="left: ${left}%; width: ${width}%; background-color: ${bgColor};" title="จอง ${b.start}-${b.end} น. (${b.name})">จอง (${b.start}-${b.end})</div>`;
              }
           }
-
-          if(isBooked) {
-             let hue = Math.floor(Math.random() * 360);
-             let pastelColor = `hsl(${hue}, 75%, 85%)`;
-             html += `<td class="slot-booked" style="background-color: ${pastelColor};" title="${bookedByName}">จอง (${bookedByName})</td>`;
-          } else {
-             html += `<td class="slot-free">ว่าง</td>`;
-          }
        }
-       html += `</tr>`;
+       html += `</div></div>`;
     }
-    html += '</table>';
+    html += '</div></div>';
     document.getElementById('schedule-inline-body').innerHTML = html;
   }
 
@@ -510,6 +518,7 @@
       loadInlineStudioSchedule(targetSunday);
     }
   }
+  // ----------------------------------------------------
 
   function toggleChat() {
     if (!currentUser.name) return showCustomAlert("⚠️ กรุณาเข้าสู่ระบบก่อนใช้งานแชทสด");
@@ -596,7 +605,16 @@
     document.getElementById('custom-alert-overlay').classList.add('hidden');
     if(alertCb) { alertCb(); alertCb = null; }
   }
-  function showPage(id) { document.querySelectorAll('.container > div').forEach(d => d.classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); }
+  function showPage(id) { 
+    document.querySelectorAll('.container > div').forEach(d => d.classList.add('hidden')); 
+    document.getElementById(id).classList.remove('hidden'); 
+    
+    // รีเซ็ตค่าฟอร์มให้สะอาดว่างเปล่าเสมอเมื่อเปลี่ยนหน้าหรือกลับมาหน้าหลัก
+    if (id === 'equipment-form-page' || id === 'studio-form-page') {
+      const inputs = document.querySelectorAll(`#${id} input[type="text"], #${id} input[type="date"], #${id} select`);
+      inputs.forEach(el => { if(!el.readOnly && el.id !== 'equip-instructor-email') el.value = ""; });
+    }
+  }
   
   function toggleIdFields() {
     const pos = document.getElementById('reg-position').value;
@@ -929,8 +947,8 @@
   
   async function submitStudio() {
     const uDate = document.getElementById('studio-date').value;
-    const sTime = document.getElementById('studio-start-time').value;
-    const eTime = document.getElementById('studio-end-time').value;
+    let sTime = document.getElementById('studio-start-time').value;
+    let eTime = document.getElementById('studio-end-time').value;
     const obj = document.getElementById('studio-objective').value.trim();
     
     if(!uDate || !sTime || !eTime || !obj) return showCustomAlert("⚠️ กรุณากรอกข้อมูลให้ครบถ้วน รวมถึงวัตถุประสงค์การใช้งาน");
