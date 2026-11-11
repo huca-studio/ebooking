@@ -122,7 +122,6 @@
     #custom-alert-text { font-size: 16px; color: #333; margin-bottom: 25px; white-space: pre-wrap; font-weight: bold; }
     .btn-alert { background: linear-gradient(135deg, rgba(205, 180, 219, 0.9), rgba(255, 190, 221, 0.9)); color: #4a235a; padding: 10px 35px; width: auto; display: inline-block; box-shadow:none; border:1px solid rgba(255,255,255,0.6); cursor: pointer; border-radius: 6px; font-size: 16px; font-family: 'Sarabun', sans-serif;}
     
-    /* CSS สำหรับตารางคิวสตูดิโอแบบแผนภูมิแท่งแนวนอน (Timeline Gantt Chart) */
     .inline-schedule-wrapper { margin-top: 25px; padding-top: 15px; border-top: 2px dashed rgba(200, 182, 226, 0.8); }
     .timeline-wrapper { width: 100%; font-size: 12px; margin-top: 15px; overflow-x: auto; overflow-y: hidden; background: rgba(255,255,255,0.6); padding: 10px 10px 15px 10px; border-radius: 8px; border: 1px solid rgba(200, 182, 226, 0.8); }
     .timeline-inner { min-width: 700px; height: auto; }
@@ -136,9 +135,8 @@
 </head>
 <body>
 
-<!-- 📌 URL ของ Google Apps Script ของคุณ -->
 <script>
-  const API_URL = "https://script.google.com/macros/s/AKfycbyntShy29-SmN_FkgA0_l8XZcuOX_Uu3OW6MOhiBxudGhJPrhTXx4XJhR5rz2-amV3f/exec"; 
+  const API_URL = "https://script.google.com/macros/s/AKfycbyO2-_JwnTxeIWE9pttm4aLliD484FAqhHJFaF6SIFsin2MmeMrwc3z4nDsgyEWU2TE/exec"; 
 </script>
 
 <div id="custom-alert-overlay" class="hidden">
@@ -241,7 +239,22 @@
     <h3 id="equip-type-display" style="color: #5b3a7a;"></h3>
     <div class="rules-box"><strong>ข้อมูลผู้ยืม:</strong> <span id="display-user-name"></span><br><strong>ตำแหน่ง:</strong> <span id="display-user-pos"></span><br><strong id="label-user-id">รหัสประจำตัว:</strong> <span id="display-user-id"></span><br><strong>เบอร์โทร:</strong> <span id="display-user-phone"></span><br><strong>อีเมลผู้ยืม:</strong> <span id="display-user-email"></span></div>
     <div class="form-group"><label>รายวิชาที่นำไปใช้</label><input type="text" id="equip-subject" placeholder="ระบุชื่อรายวิชา"></div>
-    <div class="form-row"><div class="form-group" style="flex:2;"><label>อาจารย์ผู้สอน</label><select id="equip-instructor" onchange="updateInstEmail()"><option value="" disabled selected hidden>-- เลือกอาจารย์ --</option><option value="phromsiri_s@hu.ac.th">อาจารย์พรหมศิริ สว่างแข</option></select></div><div class="form-group" style="flex:3;"><label>อีเมลอาจารย์ (ระบบจะส่งแจ้งเตือน)</label><input type="text" id="equip-instructor-email" readonly placeholder="กรุณาเลือกอาจารย์ผู้สอน"></div></div>
+    <div class="form-row">
+      <div class="form-group" style="flex:2;">
+        <label>อาจารย์ผู้สอน</label>
+        <select id="equip-instructor" onchange="updateInstEmail()">
+          <option value="" disabled selected hidden>-- เลือกอาจารย์ --</option>
+          <option value="phromsiri_s@hu.ac.th">อาจารย์พรหมศิริ สว่างแข</option>
+          <option value="teacher1@hu.ac.th">อาจารย์ ดร.สมชาย ใจดี</option>
+          <option value="teacher2@hu.ac.th">อาจารย์วิภา Modern</option>
+          <option value="teacher3@hu.ac.th">อาจารย์กิตติศักดิ์ สื่อสาร</option>
+        </select>
+      </div>
+      <div class="form-group" style="flex:3;">
+        <label>อีเมลอาจารย์ (ระบบจะส่งแจ้งเตือน)</label>
+        <input type="text" id="equip-instructor-email" readonly placeholder="กรุณาเลือกอาจารย์ผู้สอน">
+      </div>
+    </div>
     
     <div class="form-row">
       <div class="form-group"><label>วันที่รับอุปกรณ์</label><input type="date" id="equip-borrow-date" onchange="handleDateChange()"></div>
@@ -258,7 +271,7 @@
       </div>
     </div>
 
-    <a href="ใส่ลิงก์ไดรฟ์รวมรูปภาพอุปกรณ์ที่นี่" target="_blank" class="link-btn-block">📸 คลิกเพื่อดูรูปภาพของอุปกรณ์ทั้งหมด</a>
+    <a href="https://drive.google.com/drive/folders/your-folder-id" target="_blank" class="link-btn-block">📸 คลิกเพื่อดูรูปภาพของอุปกรณ์ทั้งหมด</a>
     <button type="button" class="btn-search" onclick="checkAvailableInventory()">🔍 ค้นหาอุปกรณ์ที่ว่างในช่วงเวลานี้</button>
 
     <div class="form-group" style="margin-top:20px;"><label style="border-bottom: 2px solid rgba(200, 182, 226, 0.8); padding-bottom: 8px;">รายการอุปกรณ์</label><div id="equip-items-container"><p id="equip-placeholder" style="text-align:center; color:#6c757d; margin:15px 0;">กรุณาระบุวัน-เวลา และกดค้นหาอุปกรณ์</p></div></div>
@@ -291,7 +304,6 @@
     <button type="button" class="btn-danger" onclick="showPage('studio-rules-page')" style="margin-top:30px;">ย้อนกลับ</button>
   </div>
 
-  <!-- หน้าฟอร์มจองสตูดิโอ -->
   <div id="studio-form-page" class="hidden">
     <h2>แบบฟอร์มขอใช้ห้องสตูดิโอ</h2>
     <h3 id="studio-room-display" style="color: #5b3a7a;"></h3>
@@ -315,7 +327,6 @@
     <button type="button" class="btn-primary" onclick="submitStudio()">ส่งคำร้องขอใช้สตูดิโอ</button>
     <button type="button" class="btn-danger" onclick="showPage('studio-select-page')">ยกเลิก / ย้อนกลับ</button>
 
-    <!-- ตารางคิวแบบแผนภูมิแท่งแนวนอน (Timeline Gantt Chart) พร้อมปุ่มเลื่อนสัปดาห์อัตโนมัติ -->
     <div class="inline-schedule-wrapper">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
         <h3 id="schedule-inline-title" style="margin: 0; color: #5b3a7a;">📅 แผนภูมิตารางคิว</h3>
@@ -419,7 +430,6 @@
     document.getElementById('studio-end-time').innerHTML = studioOptions;
   }
 
-  // --- ตารางคิวสตูดิโอแบบแผนภูมิแท่งแนวนอน (Timeline Gantt Chart) พร้อมรองรับเลื่อนสัปดาห์อัตโนมัติ ---
   async function loadInlineStudioSchedule(targetSunday = null) {
     document.getElementById('schedule-inline-title').innerText = `📅 แผนภูมิตารางคิว - ${currentStudioRoom}`;
     document.getElementById('schedule-inline-body').innerHTML = "<p style='text-align:center; color:#666;'>กำลังโหลดตารางคิว กรุณารอสักครู่...</p>";
@@ -432,7 +442,7 @@
 
     if (!currentScheduleSunday) {
       let curr = new Date();
-      let first = curr.getDate() - curr.getDay(); // วันอาทิตย์ของสัปดาห์นี้
+      let first = curr.getDate() - curr.getDay();
       currentScheduleSunday = new Date(curr.setDate(first));
       currentScheduleSunday.setHours(0,0,0,0);
     } else if (targetSunday) {
@@ -446,8 +456,8 @@
        weekDays.push(d);
     }
 
-    const START_MINS = 510; // 08:30
-    const END_MINS = 1260; // 21:00
+    const START_MINS = 510; 
+    const END_MINS = 1260; 
     const TOTAL_MINS = END_MINS - START_MINS;
 
     let startRangeStr = `${weekDays[0].getDate()} ${weekDays[0].toLocaleDateString('th-TH', {month:'short'})}`;
@@ -455,8 +465,6 @@
     document.getElementById('schedule-inline-title').innerText = `📅 แผนภูมิตารางคิว (${startRangeStr} - ${endRangeStr})`;
 
     let html = '<div class="timeline-wrapper"><div class="timeline-inner">';
-    
-    // แกนเวลาด้านบน
     html += '<div class="timeline-header">';
     const markers = [9, 11, 13, 15, 17, 19, 21]; 
     markers.forEach(h => {
@@ -468,7 +476,6 @@
     });
     html += '</div>';
 
-    // วาดแถวของแต่ละวัน
     for(let d of weekDays) {
        let dateStr = formatDDMMYYYY_fromObj(d);
        html += `<div class="timeline-row">`;
@@ -486,11 +493,8 @@
              if (drawStart < drawEnd) {
                 let left = ((drawStart - START_MINS) / TOTAL_MINS) * 100;
                 let width = ((drawEnd - drawStart) / TOTAL_MINS) * 100;
-                
-                // สุ่มสีพาสเทลไม่ซ้ำกัน
                 let hue = Math.floor(Math.random() * 360);
                 let bgColor = `hsl(${hue}, 70%, 85%)`;
-                
                 html += `<div class="booking-bar" style="left: ${left}%; width: ${width}%; background-color: ${bgColor};" title="จอง ${b.start}-${b.end} น. (${b.name})">จอง (${b.start}-${b.end})</div>`;
              }
           }
@@ -518,7 +522,6 @@
       loadInlineStudioSchedule(targetSunday);
     }
   }
-  // ----------------------------------------------------
 
   function toggleChat() {
     if (!currentUser.name) return showCustomAlert("⚠️ กรุณาเข้าสู่ระบบก่อนใช้งานแชทสด");
@@ -533,7 +536,6 @@
     const text = input.value.trim();
     if (!text) return;
     input.value = "";
-    
     let res = await callBackendAPI("sendChatMessage", { realName: currentUser.name, text: text });
     if (res.success) loadChatMessages();
   }
@@ -608,8 +610,6 @@
   function showPage(id) { 
     document.querySelectorAll('.container > div').forEach(d => d.classList.add('hidden')); 
     document.getElementById(id).classList.remove('hidden'); 
-    
-    // รีเซ็ตค่าฟอร์มให้สะอาดว่างเปล่าเสมอเมื่อเปลี่ยนหน้าหรือกลับมาหน้าหลัก
     if (id === 'equipment-form-page' || id === 'studio-form-page') {
       const inputs = document.querySelectorAll(`#${id} input[type="text"], #${id} input[type="date"], #${id} select`);
       inputs.forEach(el => { if(!el.readOnly && el.id !== 'equip-instructor-email') el.value = ""; });
@@ -650,7 +650,6 @@
   async function recoverPassword() {
     const inputVal = document.getElementById('forgot-input').value.trim();
     if(!inputVal) return showCustomAlert("กรุณากรอกเบอร์โทรศัพท์ที่ใช้ลงทะเบียน");
-    
     let res = await callBackendAPI("forgotPassword", { inputVal: inputVal });
     if(res.success) document.getElementById('show-password-result').innerHTML = "รหัสผ่านของคุณคือ: " + res.password;
     else showCustomAlert(res.message);
@@ -675,11 +674,9 @@
     };
     
     if(pos !== 'อาจารย์พิเศษ' && !data.id) return showCustomAlert("กรุณากรอกรหัสประจำตัว");
-    if(pos === 'อาจารย์พิเศษ' && !data.email) return showCustomAlert("สำหรับอาจารย์พิเศษ กรุณากรอกอีเมลเพื่อใช้เข้าสู่ระบบ");
     if(!fname || !lname || !data.password) return showCustomAlert("กรุณากรอกข้อมูลให้ครบถ้วน");
 
     showCustomAlert("กำลังบันทึกข้อมูล...", null, true);
-    
     let res = await callBackendAPI("register", { data: data });
     showCustomAlert(res.message, () => { if(res.success) showPage('login-page'); });
   }
@@ -790,7 +787,7 @@
 
         if (diffDays > maxDays) {
           rDate.value = "";
-          if (bDay === 4) return showCustomAlert("⚠️ กรณีรับอุปกรณ์วันพฤหัสบดี ต้องคืนภายในวันศุกร์เท่านั้น (ไม่สามารถยืมข้ามเสาร์-อาทิตย์ได้)");
+          if (bDay === 4) return showCustomAlert("⚠️ กรณีรับอุปกรณ์วันพฤหัสบดี ต้องคืนภายในวันศุกร์เท่านั้น");
           else return showCustomAlert("⚠️ แบบ 3 วัน 2 คืน ไม่สามารถคืนเกิน 3 วันนับจากวันยืมได้");
         }
       }
@@ -823,9 +820,7 @@
     if (bDate === localTodayCheck) {
       const now = new Date();
       const currentMins = now.getHours() * 60 + now.getMinutes();
-      if (bMins < currentMins) {
-        return showCustomAlert("⚠️ ไม่สามารถเลือกเวลารับอุปกรณ์ที่ผ่านไปแล้วของวันนี้ได้");
-      }
+      if (bMins < currentMins) return showCustomAlert("⚠️ ไม่สามารถเลือกเวลารับอุปกรณ์ที่ผ่านไปแล้วของวันนี้ได้");
     }
 
     document.getElementById('equip-items-container').innerHTML = "<p id='equip-placeholder' style='text-align:center; margin:15px 0;'>กำลังคำนวณคิวว่าง...</p>";
@@ -929,7 +924,6 @@
   function openStudioForm(roomName) { 
     currentStudioRoom = roomName; 
     document.getElementById('studio-room-display').innerText = roomName; 
-    
     let tzOffset = new Date().getTimezoneOffset() * 60000;
     let tomorrow = new Date(Date.now() - tzOffset);
     tomorrow.setDate(tomorrow.getDate() + 1);
