@@ -136,7 +136,7 @@
 <body>
 
 <script>
-  const API_URL = "https://script.google.com/macros/s/AKfycbyO2-_JwnTxeIWE9pttm4aLliD484FAqhHJFaF6SIFsin2MmeMrwc3z4nDsgyEWU2TE/exec"; 
+  const API_URL = "https://script.google.com/macros/s/AKfycbz49RNyRoaSZQ_XhNE0kx8x1CChn3txldzZcd_Deb7M4YzEWaUDMHie2bbFFBMIiL4M/exec"; 
 </script>
 
 <div id="custom-alert-overlay" class="hidden">
@@ -243,11 +243,7 @@
       <div class="form-group" style="flex:2;">
         <label>อาจารย์ผู้สอน</label>
         <select id="equip-instructor" onchange="updateInstEmail()">
-          <option value="" disabled selected hidden>-- เลือกอาจารย์ --</option>
-          <option value="phromsiri_s@hu.ac.th">อาจารย์พรหมศิริ สว่างแข</option>
-          <option value="teacher1@hu.ac.th">อาจารย์ ดร.สมชาย ใจดี</option>
-          <option value="teacher2@hu.ac.th">อาจารย์วิภา Modern</option>
-          <option value="teacher3@hu.ac.th">อาจารย์กิตติศักดิ์ สื่อสาร</option>
+          <option value="" disabled selected hidden>-- กำลังโหลดรายชื่ออาจารย์... --</option>
         </select>
       </div>
       <div class="form-group" style="flex:3;">
@@ -523,6 +519,39 @@
     }
   }
 
+  // --- ฟังก์ชันดึงรายชื่ออาจารย์จากชีต Teachers ---
+  async function loadTeachersDropdown() {
+    let res = await callBackendAPI("getTeachersList");
+    let select = document.getElementById('equip-instructor');
+    select.innerHTML = '<option value="" disabled selected hidden>-- เลือกอาจารย์ --</option>';
+    
+    if (res.success && res.data && res.data.length > 0) {
+      res.data.forEach(teacher => {
+        let option = document.createElement('option');
+        option.value = teacher.email; 
+        option.textContent = teacher.name;
+        option.dataset.email = teacher.email;
+        select.appendChild(option);
+      });
+    } else {
+      let option = document.createElement('option');
+      option.value = "";
+      option.textContent = "ไม่พบรายชื่ออาจารย์ในระบบ";
+      select.appendChild(option);
+    }
+  }
+
+  function updateInstEmail() {
+    let select = document.getElementById('equip-instructor');
+    let emailInput = document.getElementById('equip-instructor-email');
+    let selectedOption = select.options[select.selectedIndex];
+    if (selectedOption && selectedOption.dataset.email) {
+      emailInput.value = selectedOption.dataset.email;
+    } else {
+      emailInput.value = "";
+    }
+  }
+
   function toggleChat() {
     if (!currentUser.name) return showCustomAlert("⚠️ กรุณาเข้าสู่ระบบก่อนใช้งานแชทสด");
     const chatModal = document.getElementById('chat-modal');
@@ -622,7 +651,6 @@
     if (pos === 'อาจารย์พิเศษ') idGroup.classList.add('hidden'); else idGroup.classList.remove('hidden');
   }
 
-  function updateInstEmail() { document.getElementById('equip-instructor-email').value = document.getElementById('equip-instructor').value; }
   function clearEqList() { document.getElementById('equip-items-container').innerHTML = "<p id='equip-placeholder' style='text-align:center; color:#9c1543; margin:15px 0;'>มีการเปลี่ยนวันหรือเวลา กรุณากดค้นหาอุปกรณ์ใหม่อีกครั้ง</p>"; }
 
   function formatDDMMYYYY(dateStr) {
@@ -741,6 +769,9 @@
     clearEqList(); 
     document.getElementById('equip-other-container').innerHTML = ""; 
     otherItemCount = 0;
+    
+    // โหลดรายชื่ออาจารย์จากหลังบ้านทันทีที่เข้าฟอร์ม
+    loadTeachersDropdown();
     showPage('equipment-form-page');
   }
 
