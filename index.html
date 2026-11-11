@@ -136,13 +136,24 @@
 <body>
 
 <script>
-  const API_URL = "https://script.google.com/macros/s/AKfycbz49RNyRoaSZQ_XhNE0kx8x1CChn3txldzZcd_Deb7M4YzEWaUDMHie2bbFFBMIiL4M/exec"; 
+  const API_URL = "https://script.google.com/macros/s/AKfycbya1QneEPFhvDpGCd4Lmcus_M4Fo4wtf1F1M6buK1Xe6k94SM70RccC8G7GMiu0s_Et/exec"; 
 </script>
 
 <div id="custom-alert-overlay" class="hidden">
   <div id="custom-alert-box">
     <div id="custom-alert-text">ข้อความแจ้งเตือน</div>
     <button type="button" id="custom-alert-btn" class="btn-alert" onclick="closeCustomAlert()">ตกลง</button>
+  </div>
+</div>
+
+<!-- Pop-up Modal สำหรับแสดงแคตตาล็อกรูปภาพและชื่ออุปกรณ์จากชีต Photos -->
+<div id="photo-popup-modal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(3px); display: flex; justify-content: center; align-items: center; z-index: 10000;">
+  <div style="background: white; padding: 25px; border-radius: 12px; max-width: 600px; width: 90%; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); position: relative;">
+    <button type="button" onclick="closePhotoPopup()" style="position: absolute; top: 10px; right: 15px; background: #ffafcc; color: #9c1543; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-weight: bold;">✕</button>
+    <h3 id="popup-equip-name" style="color: #5b3a7a; margin-top: 0;">แคตตาล็อกอุปกรณ์ทั้งหมด</h3>
+    <div id="popup-equip-img-container" style="margin: 15px 0; max-height: 400px; overflow-y: auto; text-align: left; display: flex; flex-direction: column; gap: 10px;">
+      <p style="color: #666; text-align: center;">กำลังโหลดรูปภาพ...</p>
+    </div>
   </div>
 </div>
 
@@ -242,7 +253,6 @@
     <div class="form-row">
       <div class="form-group" style="flex:2;">
         <label>อาจารย์ผู้สอน</label>
-        <!-- นำข้อมูลฮาร์ดโค้ดออกทั้งหมด เหลือไว้เฉพาะตัวเลือกเริ่มต้น เพื่อดึงจากฐานข้อมูลจริง -->
         <select id="equip-instructor" onchange="updateInstEmail()">
           <option value="" disabled selected hidden>-- กำลังโหลดรายชื่ออาจารย์... --</option>
         </select>
@@ -268,7 +278,8 @@
       </div>
     </div>
 
-    <a href="https://drive.google.com/drive/folders/your-folder-id" target="_blank" class="link-btn-block">📸 คลิกเพื่อดูรูปภาพของอุปกรณ์ทั้งหมด</a>
+    <!-- ปุ่มคลิกเปิด Pop-up แคตตาล็อกรูปภาพและชื่ออุปกรณ์ -->
+    <button type="button" class="link-btn-block" onclick="openPhotoPopup()">📸 คลิกเพื่อดูรูปภาพของอุปกรณ์ทั้งหมด</button>
     <button type="button" class="btn-search" onclick="checkAvailableInventory()">🔍 ค้นหาอุปกรณ์ที่ว่างในช่วงเวลานี้</button>
 
     <div class="form-group" style="margin-top:20px;"><label style="border-bottom: 2px solid rgba(200, 182, 226, 0.8); padding-bottom: 8px;">รายการอุปกรณ์</label><div id="equip-items-container"><p id="equip-placeholder" style="text-align:center; color:#6c757d; margin:15px 0;">กรุณาระบุวัน-เวลา และกดค้นหาอุปกรณ์</p></div></div>
@@ -520,7 +531,7 @@
     }
   }
 
-  // --- ฟังก์ชันดึงรายชื่ออาจารย์จาก Google Sheets อัตโนมัติ ---
+  // --- ฟังก์ชันดึงรายชื่ออาจารย์จากชีต Teachers อัตโนมัติ ---
   async function loadTeachersDropdown() {
     let res = await callBackendAPI("getTeachersList");
     let select = document.getElementById('equip-instructor');
@@ -529,8 +540,8 @@
     if (res.success && res.data && res.data.length > 0) {
       res.data.forEach(teacher => {
         let option = document.createElement('option');
-        option.value = teacher.email; // เก็บอีเมลไว้ในค่า value
-        option.textContent = teacher.name; // แสดงชื่ออาจารย์
+        option.value = teacher.email; 
+        option.textContent = teacher.name;
         option.dataset.email = teacher.email;
         select.appendChild(option);
       });
@@ -551,6 +562,42 @@
     } else {
       emailInput.value = "";
     }
+  }
+
+  // --- ฟังก์ชันควบคุม Pop-up แคตตาล็อกรูปภาพอุปกรณ์จากชีต Photos ---
+  async function openPhotoPopup() {
+    const modal = document.getElementById('photo-popup-modal');
+    const container = document.getElementById('popup-equip-img-container');
+    modal.classList.remove('hidden');
+    container.innerHTML = "<p style='color: #666; text-align: center;'>กำลังโหลดรูปภาพและชื่ออุปกรณ์...</p>";
+
+    let res = await callBackendAPI("getPhotosGallery");
+    
+    if (res.success && res.data && res.data.length > 0) {
+      container.innerHTML = "";
+      res.data.forEach(item => {
+        let row = document.createElement('div');
+        row.style.cssText = "display: flex; align-items: center; gap: 15px; padding: 10px; border-bottom: 1px solid #eee;";
+        
+        let img = document.createElement('img');
+        img.src = item.image || "https://via.placeholder.com/100x80?text=No+Image";
+        img.style.cssText = "width: 100px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd;";
+        
+        let title = document.createElement('span');
+        title.textContent = item.name;
+        title.style.cssText = "font-weight: bold; color: #333; font-size: 15px;";
+        
+        row.appendChild(img);
+        row.appendChild(title);
+        container.appendChild(row);
+      });
+    } else {
+      container.innerHTML = `<p style="color: #9c1543; text-align: center;">ไม่พบข้อมูลรูปภาพในชีต Photos</p>`;
+    }
+  }
+
+  function closePhotoPopup() {
+    document.getElementById('photo-popup-modal').classList.add('hidden');
   }
 
   function toggleChat() {
@@ -771,7 +818,6 @@
     document.getElementById('equip-other-container').innerHTML = ""; 
     otherItemCount = 0;
     
-    // เรียกฟังก์ชันดึงรายชื่ออาจารย์จากชีต Teachers ทันที
     loadTeachersDropdown();
     showPage('equipment-form-page');
   }
