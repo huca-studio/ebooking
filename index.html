@@ -242,6 +242,7 @@
     <div class="form-row">
       <div class="form-group" style="flex:2;">
         <label>อาจารย์ผู้สอน</label>
+        <!-- นำข้อมูลฮาร์ดโค้ดออกทั้งหมด เหลือไว้เฉพาะตัวเลือกเริ่มต้น เพื่อดึงจากฐานข้อมูลจริง -->
         <select id="equip-instructor" onchange="updateInstEmail()">
           <option value="" disabled selected hidden>-- กำลังโหลดรายชื่ออาจารย์... --</option>
         </select>
@@ -519,7 +520,7 @@
     }
   }
 
-  // --- ฟังก์ชันดึงรายชื่ออาจารย์จากชีต Teachers ---
+  // --- ฟังก์ชันดึงรายชื่ออาจารย์จาก Google Sheets อัตโนมัติ ---
   async function loadTeachersDropdown() {
     let res = await callBackendAPI("getTeachersList");
     let select = document.getElementById('equip-instructor');
@@ -528,8 +529,8 @@
     if (res.success && res.data && res.data.length > 0) {
       res.data.forEach(teacher => {
         let option = document.createElement('option');
-        option.value = teacher.email; 
-        option.textContent = teacher.name;
+        option.value = teacher.email; // เก็บอีเมลไว้ในค่า value
+        option.textContent = teacher.name; // แสดงชื่ออาจารย์
         option.dataset.email = teacher.email;
         select.appendChild(option);
       });
@@ -770,7 +771,7 @@
     document.getElementById('equip-other-container').innerHTML = ""; 
     otherItemCount = 0;
     
-    // โหลดรายชื่ออาจารย์จากหลังบ้านทันทีที่เข้าฟอร์ม
+    // เรียกฟังก์ชันดึงรายชื่ออาจารย์จากชีต Teachers ทันที
     loadTeachersDropdown();
     showPage('equipment-form-page');
   }
