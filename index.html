@@ -136,24 +136,13 @@
 <body>
 
 <script>
-  const API_URL = "https://script.google.com/macros/s/AKfycbzIr9GJMJ0ciiqZ26VOCMQDJn0VVfmNjd01Z5H6N1gtsFAVTN9ZllLae0rUiuuQ8TUJ/exec"; 
+  const API_URL = "https://script.google.com/macros/s/AKfycbxVEIO9lmrsPOZjxx2PgW1nhuXbjw-vxuY4ZR5MiXKE3dKdF8YxWUaJxy-WOaUho7iA/exec"; 
 </script>
 
 <div id="custom-alert-overlay" class="hidden">
   <div id="custom-alert-box">
     <div id="custom-alert-text">ข้อความแจ้งเตือน</div>
     <button type="button" id="custom-alert-btn" class="btn-alert" onclick="closeCustomAlert()">ตกลง</button>
-  </div>
-</div>
-
-<!-- Pop-up Modal สำหรับแสดงแคตตาล็อกรูปภาพอุปกรณ์ที่ฝังในเซลล์จากชีต Photos -->
-<div id="photo-popup-modal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(3px); display: flex; justify-content: center; align-items: center; z-index: 10000;">
-  <div style="background: white; padding: 25px; border-radius: 12px; max-width: 600px; width: 90%; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); position: relative;">
-    <button type="button" onclick="closePhotoPopup()" style="position: absolute; top: 10px; right: 15px; background: #ffafcc; color: #9c1543; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-weight: bold;">✕</button>
-    <h3 style="color: #5b3a7a; margin-top: 0;">แคตตาล็อกอุปกรณ์ทั้งหมด</h3>
-    <div id="popup-equip-img-container" style="margin: 15px 0; max-height: 400px; overflow-y: auto; text-align: left; display: flex; flex-direction: column; gap: 10px;">
-      <p style="color: #666; text-align: center;">กำลังโหลดรูปภาพจากระบบ...</p>
-    </div>
   </div>
 </div>
 
@@ -195,6 +184,9 @@
 <div class="container" id="app">
   <!-- Login -->
   <div id="login-page">
+    <div style="text-align: center; margin-bottom: 15px;">
+      <img src="https://lh3.googleusercontent.com/d/1apQYtPcTsmJ4GF-ZIVQliiw1Wqek9fjW" alt="Logo" style="max-width: 120px; height: auto; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
+    </div>
     <h2>ลงชื่อเข้าใช้ระบบ</h2>
     <div class="form-group"><label>อีเมล หรือ รหัสประจำตัว</label><input type="text" id="login-id" placeholder="กรอกอีเมล หรือ รหัสประจำตัว" onkeypress="if(event.key === 'Enter') login()"></div>
     <div class="form-group"><label>รหัสผ่าน</label><div class="pwd-container"><input type="password" id="login-password" onkeypress="if(event.key === 'Enter') login()"><span class="pwd-toggle" onclick="togglePassword('login-password', this)">👁️</span></div></div>
@@ -278,7 +270,7 @@
       </div>
     </div>
 
-    <!-- ปุ่มเปิด Pop-up ดูรูปภาพอุปกรณ์จากชีต Photos -->
+    <!-- ปุ่มคลิกลิงก์เพื่อดูรูปภาพและข้อมูลจากภายนอก -->
     <button type="button" class="link-btn-block" onclick="openPhotoPopup()">📸 คลิกเพื่อดูรูปภาพของอุปกรณ์ทั้งหมด</button>
     <button type="button" class="btn-search" onclick="checkAvailableInventory()">🔍 ค้นหาอุปกรณ์ที่ว่างในช่วงเวลานี้</button>
 
@@ -564,40 +556,14 @@
     }
   }
 
-  // --- ฟังก์ชันควบคุม Pop-up แคตตาล็อกรูปภาพอุปกรณ์ที่ฝังในเซลล์จากชีต Photos ---
-  async function openPhotoPopup() {
-    const modal = document.getElementById('photo-popup-modal');
-    const container = document.getElementById('popup-equip-img-container');
-    modal.classList.remove('hidden');
-    container.innerHTML = "<p style='color: #666; text-align: center;'>กำลังโหลดรูปภาพจากชีต Photos...</p>";
-
-    let res = await callBackendAPI("getPhotosGallery");
-    
-    if (res.success && res.data && res.data.length > 0) {
-      container.innerHTML = "";
-      res.data.forEach(item => {
-        let row = document.createElement('div');
-        row.style.cssText = "display: flex; align-items: center; gap: 15px; padding: 10px; border-bottom: 1px solid #eee;";
-        
-        let img = document.createElement('img');
-        img.src = item.image; // แสดงผล Base64 ที่ดึงจากเซลล์ชีตโดยตรง
-        img.style.cssText = "width: 100px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd;";
-        
-        let title = document.createElement('span');
-        title.textContent = item.name;
-        title.style.cssText = "font-weight: bold; color: #333; font-size: 15px;";
-        
-        row.appendChild(img);
-        row.appendChild(title);
-        container.appendChild(row);
-      });
+  // --- ฟังก์ชันคลิกเปิดลิงก์รูปภาพและข้อมูลจากภายนอก ---
+  function openPhotoPopup() {
+    let photoLink = "https://drive.google.com/file/d/1apQYtPcTsmJ4GF-ZIVQliiw1Wqek9fjW/view?usp=sharing"; 
+    if (photoLink) {
+      window.open(photoLink, '_blank');
     } else {
-      container.innerHTML = `<p style="color: #9c1543; text-align: center;">ไม่พบรูปภาพที่ฝังอยู่ในชีต Photos</p>`;
+      showCustomAlert("⚠️ ยังไม่ได้กำหนดลิงก์สำหรับดูรูปภาพอุปกรณ์");
     }
-  }
-
-  function closePhotoPopup() {
-    document.getElementById('photo-popup-modal').classList.add('hidden');
   }
 
   function toggleChat() {
