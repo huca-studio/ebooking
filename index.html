@@ -136,7 +136,7 @@
 <body>
 
 <script>
-  const API_URL = "https://script.google.com/macros/s/AKfycbyIEm8JJzHDF8J_W_T4hvw8gFWoWatBR_I4FFVmj_SmqVnKOvwPOV-lMcPkG-goBzgC/exec"; 
+  const API_URL = "https://script.google.com/macros/s/AKfycbwEkNi_wHxYhLzqXGScjgOFL1DrVJHcJAUn70YQZIteskd1qyhUzww55piIlcBUlcfE/exec"; 
 </script>
 
 <div id="custom-alert-overlay" class="hidden">
@@ -1091,7 +1091,6 @@
     
     let res = await callBackendAPI("submitStudioRequest", { data: { userName: currentUser.name, userEmail: currentUser.email, position: currentUser.position, roomType: currentStudioRoom, useDate: useDateFmt, startTime: sTime, endTime: eTime, objective: obj } });
     
-    // แจ้งเตือนสำเร็จพร้อมข้อความให้ติดต่อฝ่ายปฏิบัติการนิเทศฯ โทร. 210
     if (res.success) {
       showCustomAlert(res.message + "\n\n📞 กรุณาติดต่อมายังฝ่ายปฏิบัติการนิเทศฯ โทร.210", () => showPage('main-menu-page'));
     } else {
