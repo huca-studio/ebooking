@@ -284,8 +284,8 @@
   <div id="studio-rules-page" class="hidden">
     <h2>กฎการเข้าใช้ห้องสตูดิโอ</h2>
     <div class="rules-box">
-      1. การจองห้องสตูดิโอทุกประเภท จะต้อง <strong style="color: #9c1543;">ทำรายการจองล่วงหน้าอย่างน้อย 1 วัน</strong> ก่อนเข้าใช้งานเสมอ<br>
-      2. <strong style="color: #9c1543;">สามารถทำรายการจองในวันเสาร์-อาทิตย์ได้</strong> (โดยระบบจะเปิดให้เลือกวันใช้งานล่วงหน้า 1 วันตามปกติ แต่<span style="color:#d9534f; font-weight:bold;">ไม่สามารถยืมวันเสาร์-อาทิตย์ และวันนักขัตฤกษ์ได้</span>)<br>
+      1. การจองห้องสตูดิโอทุกประเภท สามารถทำรายการจองได้ทุกวัน (รวมถึงวันเสาร์-อาทิตย์ โดยทำรายการล่วงหน้า เช่น ต้องการใช้งานวันเสาร์หรืออาทิตย์ สามารถทำรายการในวันศุกร์ได้)<br>
+      2. <strong style="color: #9c1543;">หลังจากยื่นระบบใช้ห้องสตูดิโอเรียบร้อยแล้ว ให้ติดต่อมายังฝ่ายปฏิบัติการนิเทศฯ โทร. 210</strong><br>
       3. ห้ามนำอุปกรณ์ออกนอกห้องสตูดิโอก่อนได้รับการอนุญาตจากเจ้าหน้าที่<br>
       4. ห้ามนำอาหารเครื่องดื่ม หรือสัตว์เลี้ยง และของมึนเมาเข้าภายในห้องสตูดิโอ<br>
       5. ในกรณีที่ยืมห้องตรงกันจะให้สิทธิ์คนที่จองห้องก่อน<br>
@@ -306,6 +306,9 @@
   <div id="studio-form-page" class="hidden">
     <h2>แบบฟอร์มขอใช้ห้องสตูดิโอ</h2>
     <h3 id="studio-room-display" style="color: #5b3a7a;"></h3>
+    <div class="rules-box" style="background: rgba(255, 235, 238, 0.7); border-left-color: #9c1543; margin-bottom: 15px;">
+      💡 <strong>คำแนะนำ:</strong> สามารถทำรายการจองล่วงหน้าได้ทุกวัน (เช่น จองใช้เสาร์-อาทิตย์ สามารถทำรายการในวันศุกร์ได้) และ<span style="color:#9c1543; font-weight:bold;">หลังจากยื่นระบบใช้ห้องสตูดิโอเรียบร้อยแล้ว ให้ติดต่อมายังฝ่ายปฏิบัติการนิเทศฯ โทร. 210</span>
+    </div>
     <div class="form-row"><div class="form-group"><label>วันที่ใช้งาน</label><input type="date" id="studio-date" onchange="onStudioDateChange()"></div></div>
     
     <div class="form-row">
@@ -587,14 +590,12 @@
     let dateInput = document.getElementById('studio-date').value;
     if(dateInput) {
       let selectedDate = new Date(dateInput);
-      let dayOfWeek = selectedDate.getDay();
       let isoStr = selectedDate.toISOString().split('T')[0];
       let holiday = getPublicHolidayName(isoStr);
 
-      if (dayOfWeek === 0 || dayOfWeek === 6 || holiday) {
+      if (holiday) {
         document.getElementById('studio-date').value = "";
-        let reason = holiday ? `<span style="color: #d9534f;">วันนักขัตฤกษ์ (${holiday})</span>` : "วันเสาร์-อาทิตย์";
-        return showCustomAlert(`⚠️ ไม่สามารถเลือกใช้งานใน${reason}ได้\n(ไม่สามารถยืมวันเสาร์-อาทิตย์ และวันนักขัตฤกษ์ได้)`);
+        return showCustomAlert(`⚠️ ไม่สามารถเลือกใช้งานในวันนักขัตฤกษ์ (${holiday}) ได้`);
       }
 
       let first = selectedDate.getDate() - selectedDate.getDay();
@@ -1089,7 +1090,13 @@
     showCustomAlert("กำลังตรวจสอบคิวว่าง กรุณารอสักครู่...", null, true);
     
     let res = await callBackendAPI("submitStudioRequest", { data: { userName: currentUser.name, userEmail: currentUser.email, position: currentUser.position, roomType: currentStudioRoom, useDate: useDateFmt, startTime: sTime, endTime: eTime, objective: obj } });
-    showCustomAlert(res.message, () => { if (res.success) showPage('main-menu-page'); });
+    
+    // แจ้งเตือนสำเร็จพร้อมข้อความให้ติดต่อฝ่ายปฏิบัติการนิเทศฯ โทร. 210
+    if (res.success) {
+      showCustomAlert(res.message + "\n\n📞 กรุณาติดต่อมายังฝ่ายปฏิบัติการนิเทศฯ โทร.210", () => showPage('main-menu-page'));
+    } else {
+      showCustomAlert(res.message);
+    }
   }
 </script>
 </body>
