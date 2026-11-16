@@ -136,7 +136,7 @@
 <body>
 
 <script>
-  const API_URL = "https://script.google.com/macros/s/AKfycbwhLTaBzhXyREPCxXH6_L6VYd4E2RtWikH0AgUEgvttsp7Y98qwny-1PeMrxXfp74T5/exec"; 
+  const API_URL = "https://script.google.com/macros/s/AKfycbwqlO4PAYo2_7u2x_WJsUWsAjOodlJfOrueOdUlB2xtmpNNzfGwy_G-M1eF2NGIdUc5/exec"; 
 </script>
 
 <div id="custom-alert-overlay" class="hidden">
@@ -315,11 +315,11 @@
     
     <div class="form-row">
       <div class="form-group">
-        <label>เวลาเริ่มใช้ห้อง (08:30 - 21:00 น.)</label>
+        <label id="studio-start-label">เวลาเริ่มใช้ห้อง</label>
         <select id="studio-start-time" required><option value="" disabled selected hidden>-- เลือกเวลา --</option></select>
       </div>
       <div class="form-group">
-        <label>เวลาสิ้นสุดใช้ห้อง (08:30 - 21:00 น.)</label>
+        <label id="studio-end-label">เวลาสิ้นสุดใช้ห้อง</label>
         <select id="studio-end-time" required><option value="" disabled selected hidden>-- เลือกเวลา --</option></select>
       </div>
     </div>
@@ -468,8 +468,8 @@
     return `${day}/${month}/${year}`;
   }
 
-  function populateTimeDropdownsFixed() {
-    // 5. สำหรับอุปกรณ์ เลือกเวลาได้ 08:30 น. - 16:30 น.
+  function populateTimeDropdownsFixed(roomType = "") {
+    // 1. สำหรับอุปกรณ์ เลือกเวลาได้ 08:30 น. - 16:30 น.
     let equipOptions = '<option value="" disabled selected hidden>-- เลือกเวลา --</option>';
     for (let hour = 8; hour <= 16; hour++) {
       for (let min = 0; min < 60; min += 15) {
@@ -484,12 +484,22 @@
     document.getElementById('equip-borrow-time').innerHTML = equipOptions;
     document.getElementById('equip-return-time').innerHTML = equipOptions;
 
-    // 6. สำหรับห้องสตูดิโอ เลือกเวลาได้ 08:30 น. - 21:00 น.
+    // 2. สำหรับห้องสตูดิโอ แยกตามประเภทห้อง
+    let maxHour = 21; 
+    let timeRangeText = "08:30 - 21:00 น.";
+    if (roomType === "ห้องสตูดิโอถ่ายภาพ" || roomType === "ห้องสตูดิโออัดเสียง") {
+      maxHour = 16; 
+      timeRangeText = "08:30 - 16:30 น.";
+    }
+
+    document.getElementById('studio-start-label').innerText = `เวลาเริ่มใช้ห้อง (${timeRangeText})`;
+    document.getElementById('studio-end-label').innerText = `เวลาสิ้นสุดใช้ห้อง (${timeRangeText})`;
+
     let studioOptions = '<option value="" disabled selected hidden>-- เลือกเวลา --</option>';
-    for (let hour = 8; hour <= 21; hour++) {
+    for (let hour = 8; hour <= maxHour; hour++) {
       for (let min = 0; min < 60; min += 15) {
         if (hour === 8 && min < 30) continue; 
-        if (hour === 21 && min > 0) continue; 
+        if (hour === maxHour && min > (maxHour === 16 ? 30 : 0)) continue; 
         let hStr = hour.toString().padStart(2, '0');
         let mStr = min.toString().padStart(2, '0');
         let timeVal = `${hStr}:${mStr}`;
@@ -1031,6 +1041,10 @@
   function openStudioForm(roomName) { 
     currentStudioRoom = roomName; 
     document.getElementById('studio-room-display').innerText = roomName; 
+    
+    // เรียกอัปเดตเวลาตามประเภทห้องที่เลือก
+    populateTimeDropdownsFixed(roomName);
+
     let tzOffset = new Date().getTimezoneOffset() * 60000;
     let tomorrow = new Date(Date.now() - tzOffset);
     tomorrow.setDate(tomorrow.getDate() + 1);
