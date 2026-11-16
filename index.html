@@ -136,7 +136,7 @@
 <body>
 
 <script>
-  const API_URL = "https://script.google.com/macros/s/AKfycbwqlO4PAYo2_7u2x_WJsUWsAjOodlJfOrueOdUlB2xtmpNNzfGwy_G-M1eF2NGIdUc5/exec"; 
+  const API_URL = "https://script.google.com/macros/s/AKfycbwy4dXuX0414SxwoRF3nfh1Z1Sgd3GqMjhlW_I17QbQtwc-S3stPVz8JViDGucTyj5_/exec"; 
 </script>
 
 <div id="custom-alert-overlay" class="hidden">
@@ -275,7 +275,14 @@
     <button type="button" class="btn-search" onclick="checkAvailableInventory()">🔍 ค้นหาอุปกรณ์ที่ว่างในช่วงเวลานี้</button>
 
     <div class="form-group" style="margin-top:20px;"><label style="border-bottom: 2px solid rgba(200, 182, 226, 0.8); padding-bottom: 8px;">รายการอุปกรณ์</label><div id="equip-items-container"><p id="equip-placeholder" style="text-align:center; color:#6c757d; margin:15px 0;">กรุณาระบุวัน-เวลา และกดค้นหาอุปกรณ์</p></div></div>
-    <div class="form-group"><label>อุปกรณ์อื่นๆ (นอกเหนือจากรายการ)</label><div id="equip-other-container"></div><button type="button" class="btn-secondary" onclick="addOtherItem()" style="padding:8px; font-size:14px; width:auto;">+ เพิ่มอุปกรณ์อื่นๆ</button></div>
+    
+    <!-- อุปกรณ์อื่นๆ (ซ่อนไว้เป็นค่าเริ่มต้น จนกว่าจะกดค้นหาและเลือกอุปกรณ์จากระบบ) -->
+    <div class="form-group">
+      <label>อุปกรณ์อื่นๆ (นอกเหนือจากรายการ)</label>
+      <div id="equip-other-container"></div>
+      <button type="button" id="btn-add-other" class="btn-secondary hidden" onclick="addOtherItem()" style="padding:8px; font-size:14px; width:auto;">+ เพิ่มอุปกรณ์อื่นๆ</button>
+    </div>
+
     <button type="button" class="btn-primary" onclick="submitEquipment()" style="margin-top: 25px;">ยืนยันการทำรายการยืม</button>
     <button type="button" class="btn-danger" onclick="showPage('equipment-rules-page')">ยกเลิก / ย้อนกลับ</button>
   </div>
@@ -761,7 +768,13 @@
     if (pos === 'อาจารย์พิเศษ') idGroup.classList.add('hidden'); else idGroup.classList.remove('hidden');
   }
 
-  function clearEqList() { document.getElementById('equip-items-container').innerHTML = "<p id='equip-placeholder' style='text-align:center; color:#9c1543; margin:15px 0;'>มีการเปลี่ยนวันหรือเวลา กรุณากดค้นหาอุปกรณ์ใหม่อีกครั้ง</p>"; }
+  function clearEqList() { 
+    document.getElementById('equip-items-container').innerHTML = "<p id='equip-placeholder' style='text-align:center; color:#9c1543; margin:15px 0;'>มีการเปลี่ยนวันหรือเวลา กรุณากดค้นหาอุปกรณ์ใหม่อีกครั้ง</p>"; 
+    // ซ่อนปุ่มเพิ่มอุปกรณ์อื่นๆ กลับไปเมื่อมีการเปลี่ยนวัน-เวลา
+    document.getElementById('btn-add-other').classList.add('hidden');
+    document.getElementById('equip-other-container').innerHTML = "";
+    otherItemCount = 0;
+  }
 
   function formatDDMMYYYY(dateStr) {
     if(!dateStr) return "";
@@ -967,6 +980,9 @@
     container.innerHTML = "";
     if(!res.success) { container.innerHTML = `<p style="color:#9c1543; text-align:center;">${res.message}</p>`; return; }
     
+    // เมื่อค้นหาและโหลดรายการอุปกรณ์สำเร็จแล้ว ให้แสดงปุ่มเพิ่มอุปกรณ์อื่นๆ
+    document.getElementById('btn-add-other').classList.remove('hidden');
+
     res.data.forEach((item, index) => {
       const isOut = item.available === 0;
       const badgeClass = isOut ? 'stock-badge stock-zero' : 'stock-badge';
@@ -1027,7 +1043,8 @@
       const nameEl = document.getElementById(`other-name-${i}`); const qtyEl = document.getElementById(`other-qty-${i}`);
       if(nameEl && qtyEl && nameEl.value.trim() !== "") equipmentListStr += `- [อื่นๆ] ${nameEl.value.trim()} (จำนวน ${qtyEl.value})\n`;
     }
-    if(equipmentListStr === "") return showCustomAlert("กรุณาเลือกอุปกรณ์อย่างน้อย 1 รายการ");
+    
+    if(equipmentListStr === "") return showCustomAlert("⚠️ กรุณาเลือกอุปกรณ์จากรายการหลัก หรือกดค้นหาอุปกรณ์ก่อนทำรายการ");
 
     let bDateFmt = formatDDMMYYYY(bDate);
     let rDateFmt = formatDDMMYYYY(rDate);
