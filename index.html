@@ -136,7 +136,7 @@
 <body>
 
 <script>
-  const API_URL = "https://script.google.com/macros/s/AKfycbwy4dXuX0414SxwoRF3nfh1Z1Sgd3GqMjhlW_I17QbQtwc-S3stPVz8JViDGucTyj5_/exec"; 
+  const API_URL = "https://script.google.com/macros/s/AKfycbxovoE3EG9J2u1yk4Rg0mbjY46ucFkALYnrCbWk6CPnTT_yJ6yXVMwljMp7oFbSgrLk/exec"; 
 </script>
 
 <div id="custom-alert-overlay" class="hidden">
@@ -259,7 +259,7 @@
       <div class="form-group"><label>วันที่รับอุปกรณ์</label><input type="date" id="equip-borrow-date" onchange="handleDateChange()"></div>
       <div class="form-group">
         <label>เวลาที่รับ (08:30 - 16:30 น.)</label>
-        <select id="equip-borrow-time" onchange="clearEqList()" required><option value="" disabled selected hidden>-- เลือกเวลา --</option></select>
+        <select id="equip-borrow-time" onchange="onBorrowTimeChange()" required><option value="" disabled selected hidden>-- เลือกเวลา --</option></select>
       </div>
     </div>
     <div class="form-row">
@@ -323,7 +323,7 @@
     <div class="form-row">
       <div class="form-group">
         <label id="studio-start-label">เวลาเริ่มใช้ห้อง</label>
-        <select id="studio-start-time" required><option value="" disabled selected hidden>-- เลือกเวลา --</option></select>
+        <select id="studio-start-time" onchange="onStudioStartTimeChange()" required><option value="" disabled selected hidden>-- เลือกเวลา --</option></select>
       </div>
       <div class="form-group">
         <label id="studio-end-label">เวลาสิ้นสุดใช้ห้อง</label>
@@ -475,13 +475,26 @@
     return `${day}/${month}/${year}`;
   }
 
-  function populateTimeDropdownsFixed(roomType = "") {
+  function populateTimeDropdownsFixed(roomType = "", selectedDate = "") {
+    const now = new Date();
+    const tzOffset = now.getTimezoneOffset() * 60000;
+    const localTodayStr = new Date(Date.now() - tzOffset).toISOString().split('T')[0];
+    const isToday = (selectedDate === localTodayStr);
+    const currentHour = now.getHours();
+    const currentMin = now.getMinutes();
+
     // 1. สำหรับอุปกรณ์ เลือกเวลาได้ 08:30 น. - 16:30 น.
     let equipOptions = '<option value="" disabled selected hidden>-- เลือกเวลา --</option>';
     for (let hour = 8; hour <= 16; hour++) {
       for (let min = 0; min < 60; min += 15) {
         if (hour === 8 && min < 30) continue; 
         if (hour === 16 && min > 30) continue; 
+
+        // ป้องกันไม่ให้เลือกเวลาในอดีตหากเป็นวันปัจจุบัน
+        if (isToday) {
+          if (hour < currentHour || (hour === currentHour && min <= currentMin)) continue;
+        }
+
         let hStr = hour.toString().padStart(2, '0');
         let mStr = min.toString().padStart(2, '0');
         let timeVal = `${hStr}:${mStr}`;
@@ -507,6 +520,12 @@
       for (let min = 0; min < 60; min += 15) {
         if (hour === 8 && min < 30) continue; 
         if (hour === maxHour && min > (maxHour === 16 ? 30 : 0)) continue; 
+
+        // ป้องกันไม่ให้เลือกเวลาในอดีตหากเป็นวันปัจจุบัน
+        if (isToday) {
+          if (hour < currentHour || (hour === currentHour && min <= currentMin)) continue;
+        }
+
         let hStr = hour.toString().padStart(2, '0');
         let mStr = min.toString().padStart(2, '0');
         let timeVal = `${hStr}:${mStr}`;
@@ -621,10 +640,39 @@
         return showCustomAlert(`⚠️ ไม่สามารถเลือกใช้งานใน${reason}ได้\n(ไม่สามารถยืมวันเสาร์-อาทิตย์ และวันนักขัตฤกษ์ได้)`);
       }
 
+      // อัปเดต Dropdown เวลาตามวันที่เลือก (ปองกันเวลาในอดีต)
+      populateTimeDropdownsFixed(currentStudioRoom, dateInput);
+
       let first = selectedDate.getDate() - selectedDate.getDay();
       let targetSunday = new Date(selectedDate.setDate(first));
       targetSunday.setHours(0,0,0,0);
       loadInlineStudioSchedule(targetSunday);
+    }
+  }
+
+  function onStudioStartTimeChange() {
+    let sTime = document.getElementById('studio-start-time').value;
+    let eTimeSelect = document.getElementById('studio-end-time');
+    eTimeSelect.innerHTML = '<option value="" disabled selected hidden>-- เลือกเวลา --</option>';
+    
+    if (!sTime) return;
+    let [sH, sM] = sTime.split(':').map(Number);
+    let sTotalMins = sH * 60 + sM;
+
+    let maxHour = (currentStudioRoom === "ห้องสตูดิโอใหญ่") ? 21 : 16;
+    let maxMin = (maxHour === 16) ? 30 : 0;
+
+    for (let hour = sH; hour <= maxHour; hour++) {
+      for (let min = 0; min < 60; min += 15) {
+        let totalMins = hour * 60 + min;
+        if (totalMins <= sTotalMins) continue;
+        if (hour === maxHour && min > maxMin) continue;
+
+        let hStr = hour.toString().padStart(2, '0');
+        let mStr = min.toString().padStart(2, '0');
+        let timeVal = `${hStr}:${mStr}`;
+        eTimeSelect.innerHTML += `<option value="${timeVal}">${timeVal} น.</option>`;
+      }
     }
   }
 
@@ -770,7 +818,6 @@
 
   function clearEqList() { 
     document.getElementById('equip-items-container').innerHTML = "<p id='equip-placeholder' style='text-align:center; color:#9c1543; margin:15px 0;'>มีการเปลี่ยนวันหรือเวลา กรุณากดค้นหาอุปกรณ์ใหม่อีกครั้ง</p>"; 
-    // ซ่อนปุ่มเพิ่มอุปกรณ์อื่นๆ กลับไปเมื่อมีการเปลี่ยนวัน-เวลา
     document.getElementById('btn-add-other').classList.add('hidden');
     document.getElementById('equip-other-container').innerHTML = "";
     otherItemCount = 0;
@@ -906,6 +953,9 @@
       }
       rDate.min = bDate.value; 
 
+      // อัปเดตเวลาตามวันที่รับอุปกรณ์ที่เลือก (ป้องกันเวลาในอดีต)
+      populateTimeDropdownsFixed("", bDate.value);
+
       if (currentBorrowType.includes("3 วัน 2 คืน")) {
          let maxReturn = new Date(bObj);
          if (bDay === 4) maxReturn.setDate(maxReturn.getDate() + 1); 
@@ -948,6 +998,33 @@
     }
   }
 
+  function onBorrowTimeChange() {
+    clearEqList();
+    let bDate = document.getElementById('equip-borrow-date').value;
+    let bTime = document.getElementById('equip-borrow-time').value;
+    let rTimeSelect = document.getElementById('equip-return-time');
+    rTimeSelect.innerHTML = '<option value="" disabled selected hidden>-- เลือกเวลา --</option>';
+
+    if (!bDate || !bTime) return;
+    let [bH, bM] = bTime.split(':').map(Number);
+    let bTotalMins = bH * 60 + bM;
+
+    for (let hour = 8; hour <= 16; hour++) {
+      for (let min = 0; min < 60; min += 15) {
+        if (hour === 8 && min < 30) continue; 
+        if (hour === 16 && min > 30) continue; 
+
+        let totalMins = hour * 60 + min;
+        if (totalMins <= bTotalMins) continue;
+
+        let hStr = hour.toString().padStart(2, '0');
+        let mStr = min.toString().padStart(2, '0');
+        let timeVal = `${hStr}:${mStr}`;
+        rTimeSelect.innerHTML += `<option value="${timeVal}">${timeVal} น.</option>`;
+      }
+    }
+  }
+
   async function checkAvailableInventory() {
     const bDate = document.getElementById('equip-borrow-date').value;
     const bTime = document.getElementById('equip-borrow-time').value;
@@ -955,6 +1032,18 @@
     const rTime = document.getElementById('equip-return-time').value;
 
     if(!bDate || !bTime || !rDate || !rTime) return showCustomAlert("⚠️ กรุณาระบุวันและเวลา รับ-คืน ให้ครบถ้วนก่อนค้นหา");
+
+    // ตรวจสอบห้ามเลือกเวลาในอดีต (Real-time Validation)
+    const now = new Date();
+    const tzOffset = now.getTimezoneOffset() * 60000;
+    const localTodayStr = new Date(Date.now() - tzOffset).toISOString().split('T')[0];
+    if (bDate === localTodayStr) {
+      const currentMins = now.getHours() * 60 + now.getMinutes();
+      const [bH, bM] = bTime.split(':').map(Number);
+      if ((bH * 60 + bM) <= currentMins) {
+        return showCustomAlert("⚠️ ไม่สามารถเลือกเวลารับอุปกรณ์ย้อนหลังหรือเวลาที่ผ่านพ้นไปแล้วได้");
+      }
+    }
 
     if (currentBorrowType.includes("วันต่อวัน") && bDate !== rDate) {
       document.getElementById('equip-return-date').value = bDate;
@@ -980,7 +1069,6 @@
     container.innerHTML = "";
     if(!res.success) { container.innerHTML = `<p style="color:#9c1543; text-align:center;">${res.message}</p>`; return; }
     
-    // เมื่อค้นหาและโหลดรายการอุปกรณ์สำเร็จแล้ว ให้แสดงปุ่มเพิ่มอุปกรณ์อื่นๆ
     document.getElementById('btn-add-other').classList.remove('hidden');
 
     res.data.forEach((item, index) => {
@@ -1025,9 +1113,18 @@
       return showCustomAlert("กรุณากรอกข้อมูลและกดค้นหาให้ครบถ้วน");
     }
 
-    const tzOffsetForSubmit = new Date().getTimezoneOffset() * 60000;
+    const now = new Date();
+    const tzOffsetForSubmit = now.getTimezoneOffset() * 60000;
     const localTodayForSubmit = new Date(Date.now() - tzOffsetForSubmit).toISOString().split('T')[0];
     
+    if (bDate === localTodayForSubmit) {
+      const currentMins = now.getHours() * 60 + now.getMinutes();
+      const [bH, bM] = bTime.split(':').map(Number);
+      if ((bH * 60 + bM) <= currentMins) {
+        return showCustomAlert("⚠️ ไม่สามารถทำรายการย้อนหลังหรือเลือกเวลาที่ผ่านพ้นไปแล้วได้");
+      }
+    }
+
     if (currentBorrowType.includes("3 วัน 2 คืน") && bDate === localTodayForSubmit) {
       return showCustomAlert("ไม่สามารถทำรายการได้ (ต้องทำรายการล่วงหน้าอย่างน้อย 1 วัน)");
     }
@@ -1059,15 +1156,16 @@
     currentStudioRoom = roomName; 
     document.getElementById('studio-room-display').innerText = roomName; 
     
-    // เรียกอัปเดตเวลาตามประเภทห้องที่เลือก
-    populateTimeDropdownsFixed(roomName);
-
     let tzOffset = new Date().getTimezoneOffset() * 60000;
     let tomorrow = new Date(Date.now() - tzOffset);
     tomorrow.setDate(tomorrow.getDate() + 1);
     
     document.getElementById('studio-date').min = tomorrow.toISOString().split('T')[0]; 
     document.getElementById('studio-date').value = ""; 
+
+    // เรียกอัปเดตเวลาเริ่มต้น
+    populateTimeDropdownsFixed(roomName, "");
+
     document.getElementById('studio-start-time').value = "";
     document.getElementById('studio-end-time').value = "";
     document.getElementById('studio-objective').value = "";
@@ -1084,6 +1182,18 @@
     const obj = document.getElementById('studio-objective').value.trim();
     
     if(!uDate || !sTime || !eTime || !obj) return showCustomAlert("⚠️ กรุณากรอกข้อมูลให้ครบถ้วน รวมถึงวัตถุประสงค์การใช้งาน");
+
+    const now = new Date();
+    const tzOffset = now.getTimezoneOffset() * 60000;
+    const localTodayStr = new Date(Date.now() - tzOffset).toISOString().split('T')[0];
+
+    if (uDate === localTodayStr) {
+      const currentMins = now.getHours() * 60 + now.getMinutes();
+      const [sH, sM] = sTime.split(':').map(Number);
+      if ((sH * 60 + sM) <= currentMins) {
+        return showCustomAlert("⚠️ ไม่สามารถจองเวลาในอดีตหรือเวลาที่ผ่านพ้นไปแล้วได้");
+      }
+    }
 
     const sMins = parseInt(sTime.split(":")[0]) * 60 + parseInt(sTime.split(":")[1]);
     const eMins = parseInt(eTime.split(":")[0]) * 60 + parseInt(eTime.split(":")[1]);
